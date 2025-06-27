@@ -1,8 +1,35 @@
 import React from 'react'
+import logo from '../assets/logo.png'
 
 const Navbar = () => {
   return (
-    <div>Navbar</div>
+    <nav className="font-mono bg-black shadow">
+      <div className="w-full py-4 px-4 flex items-center justify-between">
+        <a href='/' className="flex items-center gap-2 space-x-2">
+          <img src={logo} alt="onEmployment logo" className="h-8 w-8" />
+          <div className="flex items-left flex-col">
+            <span className="text-xl font-bold text-white">
+              on
+            </span>
+            <span className="text-xl font-bold text-white">
+              Employment
+            </span>
+          </div>
+
+        </a>
+        <a href="/connect" className="font-bold text-gray-400 duration-500 hover:text-white">
+          <p>
+            <i className="bi bi-search"></i> Connect
+          </p>
+        </a>
+        <a
+          href="/signup"
+          className="bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+        >
+          Sign Up
+        </a>
+      </div>
+    </nav>
   )
 }
 
