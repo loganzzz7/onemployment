@@ -4,6 +4,7 @@ import LandingPage from "./pages/LandingPage"
 import ConnectPage from "./pages/ConnectPage"
 import SignupPage from "./pages/SignupPage"
 import Navbar from "./components/Navbar"
+import Footer from "./components/Footer"
 
 function App() {
 
@@ -15,8 +16,8 @@ function App() {
         <Route path="/connect" element={<ConnectPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
-
       </Routes>
+      <Footer />
     </>
   )
 }
