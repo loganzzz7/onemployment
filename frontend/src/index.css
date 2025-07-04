@@ -1,2 +1,11 @@
 @import "tailwindcss";
 @import 'bootstrap-icons/font/bootstrap-icons.css';
+
+/* contribution map */
+.react-calendar-heatmap .color-empty {
+  fill: #3D444D;
+}
+.color-scale-1 { fill: #023A16; }
+.color-scale-2 { fill: #196C2E; }
+.color-scale-3 { fill: #2DA042; }
+.color-scale-4 { fill: #56D364; }

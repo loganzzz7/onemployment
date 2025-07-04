@@ -5,6 +5,8 @@ import ConnectPage from "./pages/ConnectPage"
 import SignupPage from "./pages/SignupPage"
 import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
+import ProfilePage from './pages/ProfilePage'
+import RepoPage from "./pages/RepoPage"
 
 function App() {
 
@@ -15,6 +17,8 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/connect" element={<ConnectPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/repo/:id" element={<RepoPage/>} />
 
       </Routes>
       <Footer />
