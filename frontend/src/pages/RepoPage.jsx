@@ -16,15 +16,15 @@ const RepoPage = () => {
                 <div className="flex items-center space-x-3">
                     <img src={avatar} alt="logo" className="h-8 w-8" />
                     <h1 className="text-2xl font-bold">/ {repo.name}</h1>
-                    <span className="ml-4 px-2 py-1 bg-gray-200 text-black rounded text-md">
+                    <span className="ml-4 px-2 py-1 bg-gray-200 text-black font-semibold rounded text-md">
                         {repo.isPublic ? "Public" : "Private"}
                     </span>
                 </div>
                 <div className="space-x-4">
-                    <button className="px-3 py-1 bg-gray-600 text-black rounded text-md duration-500 hover:bg-gray-300">
+                    <button className="px-3 py-1 bg-gray-500 text-black font-semibold rounded text-md duration-500 hover:bg-gray-300">
                         {repo.isPinned ? "Unpin" : "Pin"}
                     </button>
-                    <button className="px-3 py-1 bg-yellow-600 text-black rounded text-md duration-500 hover:bg-yellow-300">
+                    <button className="px-3 py-1 bg-gray-500 text-black font-semibold rounded text-md duration-500 hover:bg-yellow-300">
                         ⭐ {repo.stars}
                     </button>
                 </div>
@@ -42,20 +42,9 @@ const RepoPage = () => {
                         <p className="text-gray-400">{format(new Date(repo.createdAt), 'PPP')}</p>
                     </div>
                     <div>
-                        <h2 className="font-semibold mb-4">Settings</h2>
-                        {/* stubbed settings links */}
-                        <ul className="space-y-2 text-sm">
-                            <li>
-                                <button className="bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700">
-                                    Edit Repository
-                                </button>
-                            </li>
-                            <li>
-                                <button className="bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700">
-                                    Delete Repository
-                                </button>
-                            </li>
-                        </ul>
+                        <button className="bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700">
+                            <i className="bi bi-gear-wide"></i>
+                        </button>
                     </div>
                 </aside>
 
