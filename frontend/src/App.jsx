@@ -18,7 +18,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/connect" element={<ConnectPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/:username" element={<ProfilePage />} />
         <Route path="/repo/:id" element={<RepoPage/>} />
         <Route path="/commit/:id" element={<CommitPage/>} />
 

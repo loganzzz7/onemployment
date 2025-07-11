@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { format, subDays } from 'date-fns'
 import { currentUser } from '../test_data/test_user'
 import RepoCard from '../components/RepoCard'
 import CalendarHeatmap from 'react-calendar-heatmap'
 import 'react-calendar-heatmap/dist/styles.css'
+import { Link } from 'react-router-dom'
 
 
 
@@ -23,9 +24,20 @@ const ProfilePage = () => {
         github: 'https://github.com/',
     };
 
+    const [isEditing, setIsEditing] = useState(false)
+
+    const [formData, setFormData] = useState({
+        name: currentUser.name,
+        username: currentUser.username,
+        bio: currentUser.bio,
+        company: currentUser.company,
+        location: currentUser.location,
+        website: currentUser.website,
+    })
+
 
     return (
-        <main className="bg-black min-h-screen">
+        <main className="font-mono bg-black min-h-screen">
             <section className="py-8 text-white border-t-2 border-gray-800">
                 <div className="px-24 grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* — left — */}
@@ -35,22 +47,131 @@ const ProfilePage = () => {
                             alt={`${currentUser.name} avatar`}
                             className="mx-auto lg:mx-0 h-48 w-48 rounded-full border-2 border-gray-800"
                         />
-                        <h1 className="text-2xl font-bold">{currentUser.name}</h1>
-                        <p className="text-gray-300">@{currentUser.username}</p>
-                        <p className="mt-4 text-gray-400">{currentUser.bio}</p>
-                        <button className="bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700">
-                            Edit Profile
-                        </button>
 
+                        {/* Name */}
+                        {isEditing ? (
+                            <input
+                                type="text"
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                className="w-11/12 mx-auto lg:mx-0 text-2xl font-bold bg-transparent border border-gray-800 rounded px-2 py-1 text-white focus:outline-none"
+                            />
+                        ) : (
+                            <h1 className="text-2xl font-bold">{currentUser.name}</h1>
+                        )}
+
+                        {/* Username */}
+                        {isEditing ? (
+                            <input
+                                type="text"
+                                value={formData.username}
+                                onChange={e => setFormData({ ...formData, username: e.target.value })}
+                                className="w-11/12 mx-auto lg:mx-0 text-gray-300 bg-transparent border border-gray-800 rounded px-2 py-1 focus:outline-none"
+                            />
+                        ) : (
+                            <p className="text-gray-300">@{currentUser.username}</p>
+                        )}
+
+                        {/* Bio */}
+                        {isEditing ? (
+                            <textarea
+                                rows={3}
+                                value={formData.bio}
+                                onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                                className="w-11/12 mx-auto lg:mx-0 mt-4 text-gray-400 bg-transparent border border-gray-800 rounded px-2 py-1 focus:outline-none"
+                            />
+                        ) : (
+                            <p className="mt-4 text-gray-400">{currentUser.bio}</p>
+                        )}
+
+                        {/* save & cancel */}
+                        {isEditing ? (
+                            <div className="flex flex-col gap-4">
+                                <button
+                                    className="w-11/12 bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                                    onClick={() => {
+                                        // TODO send formData to API
+                                        setIsEditing(false)
+                                    }}
+                                >
+                                    Save
+                                </button>
+                                <button
+                                    className="w-11/12 bg-gray-700 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-gray-600"
+                                    onClick={() => {
+                                        setFormData({
+                                            name: currentUser.name,
+                                            username: currentUser.username,
+                                            bio: currentUser.bio,
+                                            company: currentUser.company,
+                                            location: currentUser.location,
+                                            website: currentUser.website,
+                                        })
+                                        setIsEditing(false)
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                className="w-5/6 bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                                onClick={() => setIsEditing(true)}
+                            >
+                                <i className="bi bi-gear-wide-connected" /> Edit Profile
+                            </button>
+                        )}
+
+                        {/* followers company portfolio */}
                         <ul className="space-y-2 text-gray-400">
                             <li>👥 {currentUser.followers} followers</li>
                             <li>👀 {currentUser.following} following</li>
-                            <li>🏢 {currentUser.company}</li>
-                            <li>📍 {currentUser.location}</li>
+
+                            {/* Company */}
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    value={formData.company}
+                                    onChange={e => setFormData({ ...formData, company: e.target.value })}
+                                    className="w-11/12 mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 focus:outline-none"
+                                />
+                            ) : (
+                                <li>🏢 {currentUser.company}</li>
+                            )}
+
+                            {/* Location */}
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    value={formData.location}
+                                    onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                    className="w-11/12 mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 focus:outline-none"
+                                />
+                            ) : (
+                                <li>📍 {currentUser.location}</li>
+                            )}
+
+                            {/* Joined date stays static */}
                             <li>🗓 Joined {format(new Date(currentUser.joinedAt), 'MMM yyyy')}</li>
-                            <li>🔗 <a href={currentUser.website} className="text-blue-700 hover:underline hover:text-blue-500">{currentUser.website}</a></li>
+
+                            {/* Website */}
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    value={formData.website}
+                                    onChange={e => setFormData({ ...formData, website: e.target.value })}
+                                    className="w-11/12 mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 focus:outline-none"
+                                />
+                            ) : (
+                                <li>
+                                    🔗 <a href={currentUser.website} className="text-blue-700 hover:underline hover:text-blue-500">
+                                        {currentUser.website}
+                                    </a>
+                                </li>
+                            )}
                         </ul>
 
+                        {/* Social icons unchanged… */}
                         <div className="text-blue-700 mt-8 space-x-4">
                             {Object.entries(currentUser.socials).map(([key, handle]) =>
                                 handle && icons[key] ? (
@@ -59,6 +180,7 @@ const ProfilePage = () => {
                                         href={`${baseUrls[key]}${handle}`}
                                         className="duration-500 hover:text-white"
                                         target="_blank"
+                                        rel="noopener noreferrer"
                                     >
                                         <i className={icons[key]} />
                                     </a>
@@ -74,7 +196,9 @@ const ProfilePage = () => {
                             <h2 className="text-xl font-semibold mb-4">Pinned Repositories</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {currentUser.pinnedRepos.map(r => (
-                                    <RepoCard key={r.id} repo={r} />
+                                    <Link key={r.id} to={`/repo/${r.id}`}>
+                                        <RepoCard repo={r} className="duration-500 hover:border-white" />
+                                    </Link>
                                 ))}
                             </div>
                         </div>

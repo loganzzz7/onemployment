@@ -11,7 +11,7 @@ export const currentUser = {
     company: "eat fish",
     location: "ur house",
     joinedAt: "2024-12-18T09:00:00Z",
-    website: "https://github.com/",
+    website: "https://portfolio.com/",
     socials: {
         twitter: "scoo_bert",
         linkedin: "scoo-bert-1234",

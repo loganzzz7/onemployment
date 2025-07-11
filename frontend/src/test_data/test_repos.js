@@ -36,8 +36,10 @@ export const sampleRepos = [
 export const sampleRepo = {
   id: "1",
   name: "Gym",
+  user: "scoobert",
   summary: "Logging meals and exercises every day.",
   isPublic: true,
+  isStarred: false,
   stars: 0,
   isPinned: false,
   createdAt: "2025-06-15T14:30:00Z",
@@ -45,21 +47,18 @@ export const sampleRepo = {
     {
       id: "c1",
       summary: "Started new leg day routine",
-      user: "llc",
       projectSeason: "SU 2025",
       createdAt: "2025-06-15T17:00:00Z"
     },
     {
       id: "c2",
       summary: "Added meal tracking form",
-      user: "llc",
       projectSeason: "SU 2025",
       createdAt: "2025-06-16T08:30:00Z"
     },
     {
       id: "c3",
       summary: "Updated exercise log UI",
-      user: "llc",
       projectSeason: "SU 2025",
       createdAt: "2025-06-17T19:45:00Z"
     },

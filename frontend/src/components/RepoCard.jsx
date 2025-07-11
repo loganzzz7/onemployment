@@ -1,9 +1,12 @@
 import React from 'react'
 import { format } from 'date-fns'
 
-const RepoCard = ({ repo }) => {
+const RepoCard = ({ repo, className = "" }) => {
     return (
-        <div className="bg-gray-900 rounded-lg border-2 border-gray-600 p-6 flex flex-col md:flex-row justify-between">
+        <div className={
+            `bg-gray-900 rounded-lg border-2 border-gray-600 rounded-lg p-6 flex flex-col md:flex-row justify-between
+         ${className}`
+        }>
             {/* name, summary, tags */}
             <div>
                 <h3 className="text-xl font-semibold text-white">{repo.name}</h3>
