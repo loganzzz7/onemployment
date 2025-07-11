@@ -14,7 +14,7 @@ Next up: form validation and tests.
 `,
   user: {
     username: "scoobert",
-    avatarUrl: {avatar}  
+    avatarUrl: avatar
   },
   projectSeason: "Spring 2025",
   createdAt: "2025-06-20T14:30:00Z",

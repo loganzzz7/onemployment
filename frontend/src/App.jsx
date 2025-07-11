@@ -7,6 +7,7 @@ import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
 import ProfilePage from './pages/ProfilePage'
 import RepoPage from "./pages/RepoPage"
+import CommitPage from './pages/CommitPage'
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/repo/:id" element={<RepoPage/>} />
+        <Route path="/commit/:id" element={<CommitPage/>} />
 
       </Routes>
       <Footer />
