@@ -39,7 +39,7 @@ const RepoPage = () => {
     return (
         <main className="font-mono min-h-screen bg-black text-white">
             {/* header repo title*/}
-            <div className="py-4 px-6 flex items-center justify-between border-t-2 border-b-2 border-gray-800">
+            <div className="py-4 px-6 flex items-center justify-between border-b-2 border-gray-800">
                 <div className="flex items-center space-x-3">
                     <Link to={`/profile/${repo.user}`}>
                         <img

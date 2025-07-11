@@ -31,7 +31,7 @@ const SignupPage = () => {
   }
 
   return (
-    <main className="font-mono min-h-screen bg-black text-white border-t-2 border-gray-800 flex items-center justify-center">
+    <main className="font-mono min-h-screen bg-black text-white flex items-center justify-center">
       <section className="w-2/3 p-8 bg-gray-800 text-white rounded border-2 border-gray-600 flex flex-col gap-4">
         <h2 className="text-2xl font-bold">Register or Sign-In</h2>
         {error && <p className="mb-2 text-red-400">{error}</p>}

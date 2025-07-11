@@ -11,7 +11,7 @@ const CommitPage = () => {
     const [formDesc, setFormDesc] = useState(commit.description)
 
     return (
-        <main className="font-mono min-h-screen bg-black py-8 border-t-2 border-gray-800 text-white px-16">
+        <main className="font-mono min-h-screen bg-black py-8 text-white px-16 flex flex-col gap-8">
             {/* — header — */}
             <div className="bg-gray-900 rounded-lg p-6 flex items-center justify-between border-2 border-gray-700">
                 <div className="flex items-center space-x-4">
@@ -35,9 +35,6 @@ const CommitPage = () => {
                     </button>
                 </div>
             </div>
-
-            {/* — sep — */}
-            <hr className="my-4 rounded border border-gray-800" />
 
             {/* — Description Section — */}
             <section className="bg-gray-900 shadow rounded-lg p-6 border-2 border-gray-700">

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEffect, useState, useRef } from 'react'
-import design from '../assets/design_plcmt.png'
+import connect from '../assets/connect_plcmt.png'
 import commit from '../assets/commit_plcmt.png'
 
 const LandingPage = () => {
@@ -79,13 +79,15 @@ const LandingPage = () => {
           `}>
               <div className="mx-auto">
                 <div className="
-                max-w-5xl max-h-5xl
+                max-w-5xl max-h-6xl
                 rounded-sm flex items-center justify-center
                 overflow-hidden
+                border-2 border-gray-600
+                py-8
               "
                 >
                   <img
-                    src={design}
+                    src={connect}
                     alt="Profile demo"
                     className="w-full h-full"
                   />
@@ -116,9 +118,11 @@ const LandingPage = () => {
           `}>
               <div className="mx-auto py-16">
                 <div className="
-                max-w-5xl max-h-5xl
+                max-w-5xl max-h-6xl
                 rounded-sm flex items-center justify-center
                 overflow-hidden
+                border-2 border-gray-600
+                py-8
               "
                 >
                   <img

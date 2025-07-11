@@ -38,7 +38,7 @@ const ProfilePage = () => {
 
     return (
         <main className="font-mono bg-black min-h-screen">
-            <section className="py-8 text-white border-t-2 border-gray-800">
+            <section className="py-8 text-white">
                 <div className="px-24 grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* — left — */}
                     <div className="space-y-4 text-center lg:text-left">

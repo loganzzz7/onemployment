@@ -3,7 +3,7 @@ import logo from '../assets/logo.png'
 
 const Navbar = () => {
   return (
-    <nav className="font-mono bg-black selection:bg-purple-800">
+    <nav className="font-mono bg-black selection:bg-purple-800 border-b-2 border-gray-800">
       <div className="w-full py-4 px-8 flex items-center justify-between">
         <a href='/' className="flex items-center gap-2 space-x-2">
           <img src={logo} alt="onEmployment logo" className="h-8 w-8" />
