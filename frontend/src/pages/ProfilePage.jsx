@@ -164,7 +164,7 @@ const ProfilePage = () => {
                                 />
                             ) : (
                                 <li>
-                                    🔗 <a href={currentUser.website} className="text-blue-700 hover:underline hover:text-blue-500">
+                                    🔗 <a href={currentUser.website} className="text-blue-600 hover:underline hover:text-blue-500">
                                         {currentUser.website}
                                     </a>
                                 </li>
@@ -172,7 +172,7 @@ const ProfilePage = () => {
                         </ul>
 
                         {/* Social icons unchanged… */}
-                        <div className="text-blue-700 mt-8 space-x-4">
+                        <div className="text-blue-600 mt-8 space-x-4">
                             {Object.entries(currentUser.socials).map(([key, handle]) =>
                                 handle && icons[key] ? (
                                     <a

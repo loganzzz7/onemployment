@@ -21,11 +21,13 @@ const SignupPage = () => {
       const data = await res.json()
       if (res.ok) {
         localStorage.setItem('token', data.token)
-        navigate('/profile/' + data.user.username)
+        navigate('/')
       } else {
+        console.error('Register error:', data.error)
         setError(data.error)
       }
     } catch (err) {
+      console.error('Network or JSON error:', err)
       setError('Unexpected error')
     }
   }

@@ -11,11 +11,11 @@ const userSchema = new mongoose.Schema({
 
 // on signup
 userSchema.methods.setPassword = async function (password) {
-    this.passwordHash = await bcrypt(password, 12)
+    this.passwordHash = await bcrypt.hash(password, 12)
 };
 
 // on login
-UserSchema.methods.validatePassword = async function (password) {
+userSchema.methods.validatePassword = async function (password) {
     return bcrypt.compare(password, this.passwordHash)
 };
 

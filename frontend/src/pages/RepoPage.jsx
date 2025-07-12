@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { format } from 'date-fns'
 import { sampleRepo } from '../test_data/test_repos'
 import avatar from "../assets/logo.png"
 import { Link } from 'react-router-dom'
-import { 
+import {
     Dialog,
     DialogPanel,
     DialogTitle,
@@ -66,7 +66,7 @@ const RepoPage = () => {
                     <button
                         className="px-3 py-1 bg-gray-500 text-black font-semibold rounded text-md duration-500 hover:bg-gray-300"
                         onClick={() => setIsAddOpen(true)}>
-                        <i className="bi bi-plus-circle"></i>
+                        <i className="bi bi-plus-square"></i>
                         &nbsp;
                         Add Commit
                     </button>
@@ -76,12 +76,12 @@ const RepoPage = () => {
                         className="relative z-50"
                         transition
                     >
-                        <DialogBackdrop className="fixed inset-0 bg-black/80" transition/>
+                        <DialogBackdrop className="fixed inset-0 bg-black/80" transition />
 
                         <div className="fixed inset-0 flex items-center justify-center p-4">
-                            <DialogPanel 
-                            className="bg-gray-800 text-white rounded-lg max-w-2/3 w-full p-6 space-y-4 border-2 border-gray-600 duration-300 ease-out data-closed:transform-[scale(95%)] data-closed:opacity-0"
-                            transition
+                            <DialogPanel
+                                className="bg-gray-800 text-white rounded-lg max-w-2/3 w-full p-6 space-y-4 border-2 border-gray-600 duration-300 ease-out data-closed:transform-[scale(95%)] data-closed:opacity-0"
+                                transition
                             >
                                 <DialogTitle className="text-lg font-bold">
                                     New Commit
