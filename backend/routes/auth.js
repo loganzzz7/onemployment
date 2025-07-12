@@ -1,7 +1,7 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
 import User from '../models/user.js'
-import { statusMiddle } from '../middle/status.js'
+import { authMiddle } from '../middle/status.js'
 
 const router = express.Router()
 
@@ -32,7 +32,7 @@ router.post('/login', async (req, res) => {
 })
 
 // GET /api/auth/me
-router.get('/me', statusMiddle, async (req, res) => {
+router.get('/me', authMiddle, async (req, res) => {
   const user = await User.findById(req.userId).select('-passwordHash')
   if (!user) return res.status(404).json({ error: 'User not found' })
   res.json({ user })

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useContext } from 'react'
 import { Link } from 'react-router-dom'
 import logo from '../assets/logo.png'
 import {
@@ -7,43 +7,84 @@ import {
   DialogTitle,
   Description,
   DialogBackdrop,
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions
 } from '@headlessui/react'
+import clsx from "clsx"
+import { ChevronDownIcon, CheckIcon } from '@heroicons/react/20/solid'
+import { AuthContext } from '../contexts/AuthContext'
 
 const Navbar = () => {
-  const [currentUser, setCurrentUser] = useState(null)
-
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) return
-
-    fetch('/api/auth/me', {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Not authenticated')
-        return res.json()
-      })
-      .then(data => setCurrentUser(data.user))
-      .catch(() => setCurrentUser(null))
-  }, [])
+  const { user: currentUser, loading } = useContext(AuthContext)
 
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [newName, setNewName] = useState('')
   const [newSummary, setNewSummary] = useState('')
   const [newReadme, setNewReadme] = useState('')
 
-  // on save
-  const handleAddCommit = () => {
-    console.log({ name: newName, summary: newSummary, readme: newReadme })
-    // TODO push to api and refresh
-    setIsAddOpen(false)
-    setNewName('')
-    setNewSummary('')
-    setNewReadme('')
+  // seasons list
+  const seasons = [
+    { id: 1, code: 'SP' },
+    { id: 2, code: 'SU' },
+    { id: 3, code: 'FL' },
+    { id: 4, code: 'W' },
+  ]
+
+  // combobox state
+  const [selectedSeason, setSelectedSeason] = useState(seasons[0])
+  const [seasonQuery, setSeasonQuery] = useState('')
+
+  const filteredSeasons =
+    seasonQuery === ''
+      ? seasons
+      : seasons.filter(s =>
+        s.code
+          .toLowerCase()
+          .includes(seasonQuery.trim().toLowerCase())
+      )
+
+  async function handleAddRepo() {
+    const token = localStorage.getItem('token')
+    if (!token) return alert('Please log in first')
+
+    const payload = {
+      name: newName,
+      summary: newSummary,
+      season: selectedSeason.code,
+      readme: newReadme
+    }
+
+    try {
+      const res = await fetch('/api/repos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to create repo')
+
+      // success!
+      console.log('Created repo:', data)
+      setIsAddOpen(false)
+      setNewName('')
+      setNewSummary('')
+      setNewReadme('')
+      setSelectedSeason(seasons[0])
+      setSeasonQuery('')
+    } catch (err) {
+      console.error(err)
+      alert(err.message)
+    }
   }
+
+  if (loading) return null // or a placeholder
 
   return (
     <nav className="font-mono bg-black selection:bg-purple-800 border-b-2 border-gray-800">
@@ -89,11 +130,61 @@ const Navbar = () => {
                   <DialogTitle className="text-lg font-bold">
                     New Repository
                   </DialogTitle>
-                  <Description className="text-sm text-gray-400">
-                    Add a name, summary and readme to the repository below
-                  </Description>
+                  <div className="flex justify-between">
+                    <Description className="text-sm text-gray-400">
+                      Add a name, summary and readme to the repository below
+                    </Description>
+                    <div>
+                      <label className=" text-sm font-semibold text-white">
+                        Season:
+                      </label>
 
-                  {/* name */}
+                      <Combobox
+                        value={selectedSeason}
+                        onChange={setSelectedSeason}
+                        onClose={() => setSeasonQuery('')}
+                      >
+                        <div className="relative mt-1 w-fit">
+                          <ComboboxInput
+                            className={clsx(
+                              'w-full rounded-lg border-none bg-white/5 py-1.5 pr-8 pl-3 text-sm text-white',
+                              'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-white/25'
+                            )}
+                            displayValue={s => s?.code || ''}
+                            onChange={e => setSeasonQuery(e.target.value)}
+                            placeholder="Select season"
+                          />
+
+                          <ComboboxButton className="group absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronDownIcon className="h-4 w-4 fill-white/60 group-data-hover:fill-white" />
+                          </ComboboxButton>
+
+                          <ComboboxOptions
+                            className={clsx(
+                              'absolute z-50 mt-1',
+                              'max-h-48 overflow-auto w-full',
+                              'bg-gray-700 border border-gray-600 rounded-lg py-1 text-white',
+                              'transition duration-300 ease-in data-leave:data-closed:opacity-0',
+                              'empty:invisible'
+                            )}
+                          >
+                            {filteredSeasons.map(season => (
+                              <ComboboxOption
+                                key={season.id}
+                                value={season}
+                                className="group flex cursor-default items-center gap-2 rounded-lg px-3 py-1.5 select-none data-focus:bg-white/10"
+                              >
+                                <CheckIcon className="h-4 w-4 invisible fill-white group-data-selected:visible" />
+                                <span>{season.code}</span>
+                              </ComboboxOption>
+                            ))}
+                          </ComboboxOptions>
+                        </div>
+                      </Combobox>
+                    </div>
+
+                  </div>
+
                   <div>
                     <label className="block text-sm font-semibold text-white">
                       Repository Name
@@ -106,20 +197,17 @@ const Navbar = () => {
                     />
                   </div>
 
-                  {/* sum */}
                   <div>
                     <label className="block text-sm font-semibold text-white">
                       Resposity Summary
                     </label>
                     <textarea
-                      type="text"
                       value={newSummary}
                       onChange={e => setNewSummary(e.target.value)}
                       className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:outline-none"
                     />
                   </div>
 
-                  {/* desc */}
                   <div>
                     <label className="block text-sm font-semibold text-white">
                       ReadMe
@@ -132,7 +220,6 @@ const Navbar = () => {
                     />
                   </div>
 
-                  {/* cancel save */}
                   <div className="flex justify-end space-x-2 pt-2 font-semibold">
                     <button
                       onClick={() => setIsAddOpen(false)}
@@ -141,10 +228,10 @@ const Navbar = () => {
                       Cancel
                     </button>
                     <button
-                      onClick={handleAddCommit}
-                      className="px-4 py-2 bg-blue-900 text-white rounded duration-500 hover:bg-blue-700"
+                      onClick={handleAddRepo}
+                      className="px-4 py-2 bg-blue-900 rounded hover:bg-blue-700 transition"
                     >
-                      Save
+                      Create
                     </button>
                   </div>
                 </DialogPanel>

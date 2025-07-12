@@ -4,7 +4,7 @@ import { currentUser } from '../test_data/test_user'
 import RepoCard from '../components/RepoCard'
 import CalendarHeatmap from 'react-calendar-heatmap'
 import 'react-calendar-heatmap/dist/styles.css'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 
 
@@ -35,13 +35,22 @@ const ProfilePage = () => {
         website: currentUser.website,
     })
 
+    const navigate = useNavigate()
+
+    const isAuthenticated = !!localStorage.getItem('token')
+
+    function handleLogout() {
+        localStorage.removeItem('token')
+        navigate('/')
+    }
+
 
     return (
         <main className="font-mono bg-black min-h-screen">
             <section className="py-8 text-white">
                 <div className="px-24 grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* — left — */}
-                    <div className="space-y-4 text-center lg:text-left">
+                    <div className="flex flex-col items-left gap-4">
                         <img
                             src={currentUser.avatarUrl}
                             alt={`${currentUser.name} avatar`}
@@ -84,42 +93,55 @@ const ProfilePage = () => {
                             <p className="mt-4 text-gray-400">{currentUser.bio}</p>
                         )}
 
-                        {/* save & cancel */}
-                        {isEditing ? (
-                            <div className="flex flex-col gap-4">
-                                <button
-                                    className="w-11/12 bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
-                                    onClick={() => {
-                                        // TODO send formData to API
-                                        setIsEditing(false)
-                                    }}
-                                >
-                                    Save
-                                </button>
-                                <button
-                                    className="w-11/12 bg-gray-700 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-gray-600"
-                                    onClick={() => {
-                                        setFormData({
-                                            name: currentUser.name,
-                                            username: currentUser.username,
-                                            bio: currentUser.bio,
-                                            company: currentUser.company,
-                                            location: currentUser.location,
-                                            website: currentUser.website,
-                                        })
-                                        setIsEditing(false)
-                                    }}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        ) : (
-                            <button
-                                className="w-5/6 bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
-                                onClick={() => setIsEditing(true)}
-                            >
-                                <i className="bi bi-gear-wide-connected" /> Edit Profile
-                            </button>
+                        {/* when logged show logout and edit */}
+                        {isAuthenticated && (
+                            <>
+                                {isEditing ? (
+                                    <div className="flex flex-col gap-4 w-11/12">
+                                        <button
+                                            className="bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                                            onClick={() => {
+                                                // TODO send formData to API
+                                                setIsEditing(false)
+                                            }}
+                                        >
+                                            Save
+                                        </button>
+                                        <button
+                                            className="bg-gray-700 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-gray-600"
+                                            onClick={() => {
+                                                setFormData({
+                                                    name: currentUser.name,
+                                                    username: currentUser.username,
+                                                    bio: currentUser.bio,
+                                                    company: currentUser.company,
+                                                    location: currentUser.location,
+                                                    website: currentUser.website,
+                                                })
+                                                setIsEditing(false)
+                                            }}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-4 w-11/12 sm:w-full">
+                                        <button
+                                            className="w-11/12 bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                                            onClick={() => setIsEditing(true)}
+                                        >
+                                            <i className="bi bi-gear-wide-connected" /> Edit Profile
+                                        </button>
+
+                                        <button
+                                            className="w-11/12 bg-red-700 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-red-600"
+                                            onClick={handleLogout}
+                                        >
+                                            <i className="bi bi-box-arrow-right" /> Log out
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         {/* followers company portfolio */}
