@@ -10,4 +10,9 @@ export default defineConfig({
     tsconfigPaths(),
     tailwindcss(),
   ],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3030'
+    }
+  }
 })

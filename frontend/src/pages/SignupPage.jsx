@@ -42,7 +42,7 @@ const SignupPage = () => {
               name="username"
               value={form.username}
               onChange={handleChange}
-              className="w-full bg-gray-700 border border-gray-600 rounded p-2"
+              className="w-full bg-gray-700 rounded p-2"
               required
             />
           </div>
@@ -53,7 +53,7 @@ const SignupPage = () => {
               name="email"
               value={form.email}
               onChange={handleChange}
-              className="w-full bg-gray-700 border border-gray-600 rounded p-2"
+              className="w-full bg-gray-700 rounded p-2"
               required
             />
           </div>
@@ -64,7 +64,7 @@ const SignupPage = () => {
               name="password"
               value={form.password}
               onChange={handleChange}
-              className="w-full bg-gray-700 border border-gray-600 rounded p-2"
+              className="w-full bg-gray-700 rounded p-2"
               required
             />
           </div>
