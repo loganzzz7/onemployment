@@ -9,6 +9,7 @@ import Footer from "./components/Footer"
 import ProfilePage from './pages/ProfilePage'
 import RepoPage from "./pages/RepoPage"
 import CommitPage from './pages/CommitPage'
+import ProfileRepoPage from "./pages/ProfileRepoPage"
 
 function App() {
 
@@ -21,8 +22,10 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/signin" element={<SigninPage />} />
         <Route path="/profile/:username" element={<ProfilePage />} />
-        <Route path="/repo/:id" element={<RepoPage/>} />
-        <Route path="/commit/:id" element={<CommitPage/>} />
+        <Route path="/profile/:username/repos" element={<ProfileRepoPage />} />
+        <Route path="/profile/:username/repos/:repoid" element={<RepoPage />} />
+        <Route path="/profile/:username/repos/:repoid/commits/:commitid" element={<CommitPage />} />
+
 
       </Routes>
       <Footer />

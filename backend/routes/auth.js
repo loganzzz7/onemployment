@@ -38,4 +38,33 @@ router.get('/me', authMiddle, async (req, res) => {
   res.json({ user })
 })
 
+// PATCH /api/auth/me
+router.patch('/me', authMiddle, async (req, res) => {
+  try {
+    const u = await User.findById(req.userId)
+    if (!u) return res.status(404).json({ error: 'Not found' })
+
+    const { name, bio, company, location, website, twitter, linkedin, github } = req.body
+
+    if (name    !== undefined) u.name     = name
+    if (bio     !== undefined) u.bio      = bio
+    if (company !== undefined) u.company  = company
+    if (location!== undefined) u.location = location
+    if (website !== undefined) u.website  = website
+
+    u.socials = u.socials || {}
+    if (twitter  !== undefined) u.socials.twitter  = twitter
+    if (linkedin !== undefined) u.socials.linkedin = linkedin
+    if (github   !== undefined) u.socials.github   = github
+
+    await u.save()
+
+    res.json({ user: u })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
 export default router

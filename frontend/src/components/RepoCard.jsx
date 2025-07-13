@@ -2,6 +2,14 @@ import React from 'react'
 import { format } from 'date-fns'
 
 const RepoCard = ({ repo, className = "" }) => {
+    const owner = typeof repo.user === 'object'
+        ? repo.user.username
+        : String(repo.user)
+
+    // “season + year” tag
+    const year = new Date(repo.createdAt).getFullYear()
+    const projectSeason = `${repo.season} • ${year}`
+
     return (
         <div className={
             `bg-gray-900 rounded-lg border-2 border-gray-600 rounded-lg p-6 flex flex-col md:flex-row justify-between
@@ -12,12 +20,15 @@ const RepoCard = ({ repo, className = "" }) => {
                 <h3 className="text-xl font-semibold text-white">{repo.name}</h3>
                 <p className="mt-2 text-gray-300">{repo.summary}</p>
 
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-4">
                     <span className="bg-blue-400 text-white px-2 py-1 rounded text-sm">
-                        {repo.user}
+                        {owner}
                     </span>
                     <span className="bg-blue-400 text-white px-2 py-1 rounded text-sm">
-                        {repo.projectSeason}
+                        {projectSeason}
+                    </span>
+                    <span className="bg-yellow-400 text-white px-2 py-1 rounded text-sm">
+                        <i className="bi bi-star-fill"></i>&nbsp;{repo.stars}
                     </span>
                 </div>
             </div>

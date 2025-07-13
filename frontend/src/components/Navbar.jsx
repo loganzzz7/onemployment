@@ -112,7 +112,7 @@ const Navbar = () => {
               onClick={() => setIsAddOpen(true)}>
               <i className="bi bi-plus-square"></i>
               &nbsp;
-              New Commit
+              New Repository
             </button>
             <Dialog
               open={isAddOpen}
@@ -229,7 +229,7 @@ const Navbar = () => {
                     </button>
                     <button
                       onClick={handleAddRepo}
-                      className="px-4 py-2 bg-blue-900 rounded hover:bg-blue-700 transition"
+                      className="px-4 py-2 bg-blue-900 rounded duration-500 hover:bg-blue-700"
                     >
                       Create
                     </button>
