@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { format } from 'date-fns'
 import RepoCard from '../components/RepoCard'
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import defaultAvatar from '../assets/logo.png'
+import { AuthContext } from '../contexts/AuthContext'
 
 export default function ProfileRepoPage() {
     const token = localStorage.getItem('token')
+    const { logout } = useContext(AuthContext)
     const navigate = useNavigate()
     const { username } = useParams()
-    if (!token) return <Navigate to="/signin" replace />
+
+    // redirect to signin if no token
+    useEffect(() => {
+        if (!token) {
+            logout()
+            navigate('/signin', { replace: true })
+        }
+    }, [token, logout, navigate])
 
     // profile + repos state
     const [user, setUser] = useState(null)
@@ -44,6 +53,7 @@ export default function ProfileRepoPage() {
 
     // initial load
     useEffect(() => {
+        if (!token) return
         async function load() {
             try {
                 const [{ user: u }, allRepos] = await Promise.all([
@@ -74,12 +84,12 @@ export default function ProfileRepoPage() {
                 setRepos(allRepos)
             } catch (err) {
                 console.error(err)
-                localStorage.removeItem('token')
-                navigate('/signin')
+                logout()
+                navigate('/signin', { replace: true })
             }
         }
         load()
-    }, [token, navigate])
+    }, [token, logout, navigate])
 
     if (!user) {
         return (
@@ -91,8 +101,8 @@ export default function ProfileRepoPage() {
 
     // logout
     function handleLogout() {
-        localStorage.removeItem('token')
-        navigate('/signin')
+        logout()
+        navigate('/signin', { replace: true })
     }
 
     // save edits
@@ -194,7 +204,7 @@ export default function ProfileRepoPage() {
                                     </button>
                                     <button
                                         onClick={handleCancel}
-                                        className="bg-gray-700 text-white font-bold px-4 py-2 rounded hover:bg-gray-600"
+                                        className="bg-gray-600 text-white font-bold px-4 py-2 rounded hover:bg-gray-500"
                                     >
                                         Cancel
                                     </button>
@@ -398,7 +408,7 @@ export default function ProfileRepoPage() {
                             <div className="text-white font-medium pb-4">
                                 <p>Repositories:</p>
                             </div>
-                            <div className="border-2 border-gray-400 rounded overflow-y-auto max-h-[60vh]">
+                            <div className="border-2 border-gray-400 rounded overflow-y-auto max-h-[65vh]">
                                 <div className="flex flex-col gap-8 p-4">
                                     {visible.map(r => (
                                         <Link

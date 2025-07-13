@@ -1,15 +1,24 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { format, subDays } from 'date-fns'
 import RepoCard from '../components/RepoCard'
 import CalendarHeatmap from 'react-calendar-heatmap'
 import 'react-calendar-heatmap/dist/styles.css'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import defaultAvatar from '../assets/logo.png'
+import { AuthContext } from '../contexts/AuthContext'
 
 const ProfilePage = () => {
+    const { logout } = useContext(AuthContext)
     const token = localStorage.getItem('token')
-    if (!token) return <Navigate to="/signin" replace />
     const navigate = useNavigate()
+
+    // redirect to signin if no token, but inside useEffect so hooks are stable
+    useEffect(() => {
+        if (!token) {
+            logout()
+            navigate('/', { replace: true })
+        }
+    }, [token, logout, navigate])
 
     const [user, setUser] = useState(null)
     const [repos, setRepos] = useState([])
@@ -32,8 +41,9 @@ const ProfilePage = () => {
         github: 'bi bi-github',
     }
 
-    // initial load
+    // load profile & repos
     useEffect(() => {
+        if (!token) return
         async function loadData() {
             try {
                 const [{ user: u }, repos] = await Promise.all([
@@ -64,13 +74,14 @@ const ProfilePage = () => {
                 setRepos(repos)
             } catch (err) {
                 console.error(err)
-                localStorage.removeItem('token')
-                navigate('/signin')
+                logout()
+                navigate('/signin', { replace: true })
             }
         }
         loadData()
-    }, [token, navigate])
+    }, [token, logout, navigate])
 
+    // still show a loader until user is fetched
     if (!user) {
         return (
             <div className="min-h-screen flex items-center justify-center text-white">
@@ -93,8 +104,8 @@ const ProfilePage = () => {
     const contributionData = Object.entries(contribCount).map(([date, count]) => ({ date, count }))
 
     function handleLogout() {
-        localStorage.removeItem('token')
-        navigate('/')
+        logout()
+        navigate('/signin', { replace: true })
     }
 
     async function handleSave() {
@@ -121,7 +132,7 @@ const ProfilePage = () => {
         <main className="font-mono bg-black min-h-screen">
             <section className="py-8 text-white">
                 <div className="px-24 grid grid-cols-1 md:grid-cols-3 gap-16">
-                    {/* left */}
+                    {/* — left column — */}
                     <div className="space-y-4">
                         <img
                             src={user.avatarUrl || defaultAvatar}
@@ -181,7 +192,7 @@ const ProfilePage = () => {
                                             })
                                             setIsEditing(false)
                                         }}
-                                        className="bg-gray-700 text-white font-bold px-4 py-2 rounded hover:bg-gray-600"
+                                        className="bg-gray-600 text-white font-bold px-4 py-2 rounded hover:bg-gray-500"
                                     >
                                         Cancel
                                     </button>
@@ -202,7 +213,7 @@ const ProfilePage = () => {
                             </button>
                         </div>
 
-                        {/* Stats */}
+                        {/* Stats & socials */}
                         <ul className="space-y-2 text-gray-400">
                             <li>👥 {user.followers} followers</li>
                             <li>👀 {user.following} following</li>
@@ -319,15 +330,41 @@ const ProfilePage = () => {
                         )}
                     </div>
 
-                    {/* right */}
+                    {/* — right column — */}
                     <div className="w-full md:col-span-2 space-y-8">
                         {pinnedRepos.length > 0 && (
                             <div>
                                 <h2 className="text-xl font-semibold mb-4">Pinned Repositories</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {pinnedRepos.map(r => (
-                                        <Link key={r._id} to={`/profile/${user.username}/repos/${r._id}`}>
-                                            <RepoCard repo={r} className="hover:border-white duration-500" />
+                                        <Link
+                                            key={r._id}
+                                            to={`/profile/${user.username}/repos/${r._id}`}
+                                            className="block h-full"
+                                        >
+                                            <div className="flex flex-col h-full border-2 border-gray-700 duration-500 hover:border-white rounded-lg overflow-hidden">
+                                                {/* content grows to fill */}
+                                                <div className="p-4 flex-grow">
+                                                    <h3 className="text-lg font-bold mb-2">{r.name}</h3>
+                                                    <p className="text-gray-400 text-sm mb-4 truncate">
+                                                        {r.summary}
+                                                    </p>
+                                                </div>
+                                                {/* footer */}
+                                                <div className="px-4 py-2 bg-gray-800 flex items-center justify-between">
+                                                    <div className="flex gap-2">
+                                                        <span className="bg-blue-400 text-white px-2 py-1 rounded text-sm">
+                                                            {user.username}
+                                                        </span>
+                                                        <span className="bg-blue-400 text-white px-2 py-1 rounded text-sm">
+                                                            {r.season}&nbsp;•&nbsp;{new Date(r.createdAt).getFullYear()}
+                                                        </span>
+                                                    </div>
+                                                    <span className="bg-yellow-400 text-black px-2 py-1 rounded text-sm font-semibold">
+                                                        <i className="bi bi-star-fill"></i>&nbsp;{r.stars}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </Link>
                                     ))}
                                 </div>

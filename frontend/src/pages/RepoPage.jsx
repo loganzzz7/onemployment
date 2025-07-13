@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link, Navigate, useNavigate } from 'react-router-dom'
+import { useParams, Link, Navigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import avatar from "../assets/logo.png"
 import {
@@ -13,8 +13,7 @@ import {
 export default function RepoPage() {
     const { repoid } = useParams()
     const token = localStorage.getItem('token')
-    const navigate = useNavigate()
-    if (!token) return <Navigate to="/signin" replace />
+    if (!token) return <Navigate to="/" replace />
 
     const [repo, setRepo] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -56,12 +55,6 @@ export default function RepoPage() {
     }
     if (error || !repo) {
         return <div className="min-h-screen flex items-center justify-center text-red-400">{error || 'Not found'}</div>
-    }
-
-    // logout
-    function handleLogout() {
-        localStorage.removeItem('token')
-        navigate('/signin')
     }
 
     // save “About”
@@ -154,7 +147,7 @@ export default function RepoPage() {
                         <img
                             src={repo.user.avatarUrl || avatar}
                             alt={`${repo.user.username} avatar`}
-                            className="h-8 w-8 rounded-full hover:border duration-150"
+                            className="h-8 w-8 rounded-full border-2 border-gray-600 duration-500 hover:border-white duration-150"
                         />
                     </Link>
                     <h1 className="text-2xl font-bold">
@@ -277,7 +270,7 @@ export default function RepoPage() {
                                 </button>
                                 <button
                                     onClick={() => { setFormSummary(repo.summary); setIsEditingAbout(false) }}
-                                    className="bg-gray-700 py-2 w-full duration-500 rounded hover:bg-gray-600"
+                                    className="bg-gray-600 py-2 w-full duration-500 rounded hover:bg-gray-500"
                                 >
                                     Cancel
                                 </button>
@@ -302,11 +295,11 @@ export default function RepoPage() {
                 <section className="md:col-span-3 space-y-4">
                     {/* commits */}
                     {repo.commits.length > 0 && <p className="font-bold text-2xl">Commits:</p>}
-                    <div className="border-2 border-gray-700 rounded-lg overflow-y-auto max-h-[40vh] p-4 space-y-4">
+                    {repo.commits.length > 0 && <div className="border-2 border-gray-700 rounded-lg overflow-y-auto max-h-[40vh] p-4 space-y-4">
                         {repo.commits.map(c => (
                             <Link
                                 key={c._id}
-                                to={`/profile/${repo.user.username}/repos/${repoid}/commit/${c._id}`}
+                                to={`/profile/${repo.user.username}/repos/${repoid}/commits/${c._id}`}
                                 className="block"
                             >
                                 <div className="flex flex-col gap-2 bg-gray-900 border-2 border-gray-700 rounded-lg p-4 hover:border-white duration-500">
@@ -321,7 +314,7 @@ export default function RepoPage() {
                                 </div>
                             </Link>
                         ))}
-                    </div>
+                    </div>}
 
                     {/* readme */}
                     <div className="bg-gray-900 border-2 border-gray-700 rounded-lg p-6">
@@ -337,7 +330,7 @@ export default function RepoPage() {
                                     </button>
                                     <button
                                         onClick={() => { setFormReadme(repo.readme); setIsEditingReadme(false) }}
-                                        className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600"
+                                        className="px-3 py-1 bg-gray-600 rounded hover:bg-gray-500"
                                     >
                                         Cancel
                                     </button>

@@ -28,7 +28,7 @@ const RepoCard = ({ repo, className = "" }) => {
                         {projectSeason}
                     </span>
                     <span className="bg-yellow-400 text-white px-2 py-1 rounded text-sm">
-                        <i className="bi bi-star-fill"></i>&nbsp;{repo.stars}
+                        <p className="text-black"><i className="bi bi-star-fill"></i>&nbsp;{repo.stars}</p>
                     </span>
                 </div>
             </div>

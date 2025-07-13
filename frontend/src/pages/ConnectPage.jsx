@@ -1,38 +1,84 @@
 import React, { useState, useEffect } from 'react'
-import { sampleRepos } from "../test_data/test_repos"
 import RepoCard from '../components/RepoCard'
-import { Link } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 
-const ConnectPage = () => {
+export default function ConnectPage() {
+  const token = localStorage.getItem('token')
+  const navigate = useNavigate()
+  // redirect if not signed in
+  if (!token) return <Navigate to="/signin" replace />
+
+  const [repos, setRepos] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
   const [visibleCount, setVisibleCount] = useState(3)
   const [searchActive, setSearchActive] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // search for friend => reset to 3
+  // reset pagination whenever you start a new search
   useEffect(() => {
-    if (searchActive) {
-      setVisibleCount(3)
-    }
+    if (searchActive) setVisibleCount(3)
   }, [searchActive, searchQuery])
 
-  const allRepos = searchActive
-    ? sampleRepos.filter(r =>
-      r.user.toLowerCase().includes(searchQuery.trim().toLowerCase())
-    )
-    : sampleRepos
+  // load from backend
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch('/api/repos', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) throw new Error('Failed to load repositories')
+        const data = await res.json()
+        setRepos(data)
+      } catch (err) {
+        console.error(err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [token])
 
-  const handleViewMore = () => {
-    setVisibleCount(prev => Math.min(prev + 10, allRepos.length))
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Loading…
+      </div>
+    )
+  }
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-400">
+        {error}
+      </div>
+    )
   }
 
+  // filter by user‐search if active
+  const allRepos = searchActive
+    ? repos.filter(r =>
+        r.user.username
+          .toLowerCase()
+          .includes(searchQuery.trim().toLowerCase())
+      )
+    : repos
+
   const visibleRepos = allRepos.slice(0, visibleCount)
+  const handleViewMore = () =>
+    setVisibleCount(prev => Math.min(prev + 10, allRepos.length))
 
   return (
     <main className="font-mono selection::bg-purple-800 bg-black min-h-screen">
       <section className="w-11/12 mx-auto pt-16 flex justify-between">
         <div className="text-white flex flex-col gap-4">
-          <p className="sm:text-md md:text-xl lg:text-4xl font-bold">Progress Together</p>
-          <p className="sm:text-sm md:text-md lg:text-lg font-bold">Discover how others are locking in and improve together</p>
+          <p className="sm:text-md md:text-xl lg:text-4xl font-bold">
+            Progress Together
+          </p>
+          <p className="sm:text-sm md:text-md lg:text-lg font-bold">
+            Discover how others are locking in and improve together
+          </p>
         </div>
 
         <div className="flex items-center space-x-2 font-bold text-gray-400">
@@ -61,12 +107,13 @@ const ConnectPage = () => {
                 }}
                 className="text-gray-500 duration-500 hover:text-white"
               >
-                <i className="bi bi-x-square"></i>
+                <i className="bi bi-x-square" />
               </button>
             </>
           )}
         </div>
       </section>
+
       <section className="w-11/12 mx-auto pt-12">
         <div className="text-white font-medium pb-4">
           <p>Repositories:</p>
@@ -74,13 +121,19 @@ const ConnectPage = () => {
         <div className="border-2 border-gray-400 rounded overflow-y-auto max-h-[60vh]">
           <div className="flex flex-col gap-8 p-4">
             {visibleRepos.map(r => (
-              <Link key={r.id} to={`/repo/${r.id}`} className="block">
-                <RepoCard repo={r} className="duration-500 hover:border-white" />
+              <Link
+                key={r._id}
+                to={`/profile/${r.user.username}/repos/${r._id}`}
+                className="block"
+              >
+                <RepoCard
+                  repo={r}
+                  className="duration-500 hover:border-white"
+                />
               </Link>
             ))}
           </div>
 
-          {/* no button if no more repos */}
           {visibleCount < allRepos.length && (
             <button
               onClick={handleViewMore}
@@ -94,5 +147,3 @@ const ConnectPage = () => {
     </main>
   )
 }
-
-export default ConnectPage
