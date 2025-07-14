@@ -10,11 +10,24 @@ import ProfilePage from './pages/ProfilePage'
 import RepoPage from "./pages/RepoPage"
 import CommitPage from './pages/CommitPage'
 import ProfileRepoPage from "./pages/ProfileRepoPage"
+import TextCursor from "./components/TextCursor"
+
+
 
 function App() {
 
   return (
-    <>
+    <TextCursor
+      text="😳"
+      delay={0.01}
+      spacing={80}
+      followMouseDirection={true}
+      randomFloat={true}
+      exitDuration={0.3}
+      removalInterval={20}
+      maxPoints={10}
+    >
+
       <Navbar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -29,7 +42,8 @@ function App() {
 
       </Routes>
       <Footer />
-    </>
+    </TextCursor>
+
   )
 }
 
