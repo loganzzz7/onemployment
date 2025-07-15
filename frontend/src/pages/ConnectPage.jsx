@@ -1,13 +1,10 @@
+// src/pages/ConnectPage.jsx
 import React, { useState, useEffect } from 'react'
 import RepoCard from '../components/RepoCard'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import SplitText from '../components/SplitText'
 
 export default function ConnectPage() {
-  const token = localStorage.getItem('token')
-  const navigate = useNavigate()
-  // redirect if not signed in
-  if (!token) return <Navigate to="/signin" replace />
-
   const [repos, setRepos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -16,18 +13,22 @@ export default function ConnectPage() {
   const [searchActive, setSearchActive] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // reset pagination whenever you start a new search
+  // reset pagination when a new search starts
   useEffect(() => {
     if (searchActive) setVisibleCount(3)
   }, [searchActive, searchQuery])
 
-  // load from backend
+  // load all public repos
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/repos', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        // include auth header if user is logged in
+        const token = localStorage.getItem('token')
+        const headers = token
+          ? { Authorization: `Bearer ${token}` }
+          : {}
+
+        const res = await fetch('/api/repos/all', { headers })
         if (!res.ok) throw new Error('Failed to load repositories')
         const data = await res.json()
         setRepos(data)
@@ -39,7 +40,7 @@ export default function ConnectPage() {
       }
     }
     load()
-  }, [token])
+  }, [])
 
   if (loading) {
     return (
@@ -56,29 +57,49 @@ export default function ConnectPage() {
     )
   }
 
-  // filter by user‐search if active
+  // filter down to searched username
   const allRepos = searchActive
     ? repos.filter(r =>
-        r.user.username
-          .toLowerCase()
-          .includes(searchQuery.trim().toLowerCase())
-      )
+      r.user.username
+        .toLowerCase()
+        .includes(searchQuery.trim().toLowerCase())
+    )
     : repos
 
   const visibleRepos = allRepos.slice(0, visibleCount)
   const handleViewMore = () =>
-    setVisibleCount(prev => Math.min(prev + 10, allRepos.length))
+    setVisibleCount(c => Math.min(c + 10, allRepos.length))
 
   return (
-    <main className="font-mono selection::bg-purple-800 bg-black min-h-screen">
+    <main className="font-mono bg-black min-h-screen">
       <section className="w-11/12 mx-auto pt-16 flex justify-between">
         <div className="text-white flex flex-col gap-4">
-          <p className="sm:text-md md:text-xl lg:text-4xl font-bold">
-            Progress Together
-          </p>
-          <p className="sm:text-sm md:text-md lg:text-lg font-bold">
-            Discover how others are locking in and improve together
-          </p>
+          <SplitText
+            text="Progress Together"
+            className="sm:text-md md:text-xl lg:text-4xl font-bold"
+            delay={100}
+            duration={0.1}
+            ease="power3.out"
+            splitType="chars"
+            from={{ opacity: 0, y: 40 }}
+            to={{ opacity: 1, y: 0 }}
+            threshold={0.1}
+            rootMargin="-100px"
+            textAlign="left"
+          />
+          <SplitText
+            text="Discover how others are locking in and improve together"
+            className="sm:text-sm md:text-md lg:text-lg font-bold"
+            delay={30}
+            duration={0.1}
+            ease="power3.out"
+            splitType="chars"
+            from={{ opacity: 0, y: 40 }}
+            to={{ opacity: 1, y: 0 }}
+            threshold={0.1}
+            rootMargin="-100px"
+            textAlign="left"
+          />
         </div>
 
         <div className="flex items-center space-x-2 font-bold text-gray-400">
@@ -115,7 +136,7 @@ export default function ConnectPage() {
       </section>
 
       <section className="w-11/12 mx-auto pt-12">
-        <div className="text-white font-medium pb-4">
+        <div className="text-white font-semibold pb-4">
           <p>Repositories:</p>
         </div>
         <div className="border-2 border-gray-400 rounded overflow-y-auto max-h-[60vh]">
@@ -126,10 +147,7 @@ export default function ConnectPage() {
                 to={`/profile/${r.user.username}/repos/${r._id}`}
                 className="block"
               >
-                <RepoCard
-                  repo={r}
-                  className="duration-500 hover:border-white"
-                />
+                <RepoCard repo={r} className="duration-500 hover:border-white" />
               </Link>
             ))}
           </div>

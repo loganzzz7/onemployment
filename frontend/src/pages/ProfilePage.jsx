@@ -1,28 +1,22 @@
+// src/pages/ProfilePage.jsx
 import React, { useState, useEffect, useContext } from 'react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { format, subDays } from 'date-fns'
 import RepoCard from '../components/RepoCard'
 import CalendarHeatmap from 'react-calendar-heatmap'
 import 'react-calendar-heatmap/dist/styles.css'
-import { Link, useNavigate } from 'react-router-dom'
 import defaultAvatar from '../assets/logo.png'
 import { AuthContext } from '../contexts/AuthContext'
 
 const ProfilePage = () => {
-    const { logout } = useContext(AuthContext)
-    const token = localStorage.getItem('token')
+    const { user: currentUser, logout } = useContext(AuthContext)
+    const { username } = useParams()
     const navigate = useNavigate()
-
-    // redirect to signin if no token, but inside useEffect so hooks are stable
-    useEffect(() => {
-        if (!token) {
-            logout()
-            navigate('/', { replace: true })
-        }
-    }, [token, logout, navigate])
+    const token = localStorage.getItem('token')
+    const isOwner = currentUser?.username === username
 
     const [user, setUser] = useState(null)
     const [repos, setRepos] = useState([])
-
     const [isEditing, setIsEditing] = useState(false)
     const [formData, setFormData] = useState({
         name: '',
@@ -41,25 +35,13 @@ const ProfilePage = () => {
         github: 'bi bi-github',
     }
 
-    // load profile & repos
+    // fetch profile
     useEffect(() => {
-        if (!token) return
-        async function loadData() {
+        async function fetchProfile() {
             try {
-                const [{ user: u }, repos] = await Promise.all([
-                    fetch('/api/auth/me', {
-                        headers: { Authorization: `Bearer ${token}` },
-                    }).then(r => {
-                        if (!r.ok) throw new Error('Not authenticated')
-                        return r.json()
-                    }),
-                    fetch('/api/repos', {
-                        headers: { Authorization: `Bearer ${token}` },
-                    }).then(r => {
-                        if (!r.ok) throw new Error('Failed to load repos')
-                        return r.json()
-                    }),
-                ])
+                const res = await fetch(`/api/repos/user/${username}`)
+                if (!res.ok) throw new Error('Profile not found')
+                const { user: u } = await res.json()
                 setUser(u)
                 setFormData({
                     name: u.name,
@@ -71,17 +53,29 @@ const ProfilePage = () => {
                     linkedin: u.socials.linkedin || '',
                     github: u.socials.github || '',
                 })
-                setRepos(repos)
             } catch (err) {
                 console.error(err)
-                logout()
-                navigate('/signin', { replace: true })
+                navigate('/', { replace: true })
             }
         }
-        loadData()
-    }, [token, logout, navigate])
+        fetchProfile()
+    }, [username, navigate])
 
-    // still show a loader until user is fetched
+    // fetch that user’s public repos
+    useEffect(() => {
+        async function fetchRepos() {
+            try {
+                const res = await fetch(`/api/repos/all?user=${username}`)
+                if (!res.ok) throw new Error('Failed to load repos')
+                const data = await res.json()
+                setRepos(data)
+            } catch (err) {
+                console.error(err)
+            }
+        }
+        fetchRepos()
+    }, [username])
+
     if (!user) {
         return (
             <div className="min-h-screen flex items-center justify-center text-white">
@@ -90,8 +84,7 @@ const ProfilePage = () => {
         )
     }
 
-    const pinnedRepos = repos.filter(r => r.isPinned)
-
+    const pinnedRepos = repos.filter(r => r.isPinned && r.user.username === username)
     const contribCount = {}
     repos.forEach(r =>
         (r.commits || []).forEach(c => {
@@ -103,11 +96,7 @@ const ProfilePage = () => {
     const startDate = subDays(endDate, 364)
     const contributionData = Object.entries(contribCount).map(([date, count]) => ({ date, count }))
 
-    function handleLogout() {
-        logout()
-        navigate('/signin', { replace: true })
-    }
-
+    // only runs if it’s _your_ profile
     async function handleSave() {
         try {
             const res = await fetch('/api/auth/me', {
@@ -128,6 +117,11 @@ const ProfilePage = () => {
         }
     }
 
+    function handleLogout() {
+        logout()
+        navigate('/signin', { replace: true })
+    }
+
     return (
         <main className="font-mono bg-black min-h-screen">
             <section className="py-8 text-white">
@@ -141,11 +135,10 @@ const ProfilePage = () => {
                         />
 
                         <h1 className="text-2xl font-bold">
-                            {isEditing ? (
+                            {isOwner && isEditing ? (
                                 <input
                                     type="text"
                                     value={formData.name}
-                                    placeholder="Name"
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                                     className="w-11/12 mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-white focus:outline-none"
                                 />
@@ -156,12 +149,11 @@ const ProfilePage = () => {
 
                         <p className="text-gray-300">@{user.username}</p>
 
-                        {isEditing ? (
+                        {isOwner && isEditing ? (
                             <textarea
                                 rows={3}
                                 value={formData.bio}
                                 onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                                placeholder="Write a bio..."
                                 className="w-11/12 mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-gray-400 focus:outline-none"
                             />
                         ) : (
@@ -170,11 +162,11 @@ const ProfilePage = () => {
 
                         {/* Edit / Save / Cancel / Logout */}
                         <div className="flex gap-4 w-11/12 sm:w-full">
-                            {isEditing ? (
+                            {isOwner && isEditing ? (
                                 <>
                                     <button
                                         onClick={handleSave}
-                                        className="bg-blue-900 text-white font-bold px-4 py-2 rounded hover:bg-blue-700"
+                                        className="bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
                                     >
                                         Save
                                     </button>
@@ -192,125 +184,136 @@ const ProfilePage = () => {
                                             })
                                             setIsEditing(false)
                                         }}
-                                        className="bg-gray-600 text-white font-bold px-4 py-2 rounded hover:bg-gray-500"
+                                        className="bg-gray-600 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-gray-500"
                                     >
                                         Cancel
                                     </button>
                                 </>
-                            ) : (
+                            ) : isOwner ? (
                                 <button
                                     onClick={() => setIsEditing(true)}
                                     className="bg-blue-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
                                 >
-                                    <i className="bi bi-gear-wide-connected" /> Edit Profile
+                                    Edit Profile
+                                </button>
+                            ) : null}
+                            {isOwner && (
+                                <button
+                                    onClick={handleLogout}
+                                    className="bg-red-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-red-700"
+                                >
+                                    Log Out
                                 </button>
                             )}
-                            <button
-                                onClick={handleLogout}
-                                className="bg-red-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-red-700"
-                            >
-                                <i className="bi bi-box-arrow-right" /> Log Out
-                            </button>
                         </div>
 
                         {/* Stats & socials */}
                         <ul className="space-y-2 text-gray-400">
                             <li>👥 {user.followers} followers</li>
                             <li>👀 {user.following} following</li>
-                            {isEditing ? (
+
+                            {isOwner && isEditing ? (
                                 <li>
-                                    🏢{' '}
-                                    <input
-                                        type="text"
-                                        value={formData.company}
-                                        onChange={e => setFormData({ ...formData, company: e.target.value })}
-                                        placeholder="Company"
-                                        className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
-                                    />
+                                    <div className="flex gap-2">
+                                        🏢{' '}
+                                        <input
+                                            type="text"
+                                            value={formData.company}
+                                            onChange={e => setFormData({ ...formData, company: e.target.value })}
+                                            className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
+                                        />
+                                    </div>
                                 </li>
-                            ) : (
-                                user.company && <li>🏢 {user.company}</li>
-                            )}
-                            {isEditing ? (
+                            ) : user.company ? (
+                                <li>🏢 {user.company}</li>
+                            ) : null}
+
+                            {isOwner && isEditing ? (
                                 <li>
-                                    📍{' '}
-                                    <input
-                                        type="text"
-                                        value={formData.location}
-                                        onChange={e => setFormData({ ...formData, location: e.target.value })}
-                                        placeholder="Location"
-                                        className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
-                                    />
+                                    <div className="flex gap-2">
+                                        📍{' '}
+                                        <input
+                                            type="text"
+                                            value={formData.location}
+                                            onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                            className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
+                                        />
+                                    </div>
                                 </li>
-                            ) : (
-                                user.location && <li>📍 {user.location}</li>
-                            )}
+                            ) : user.location ? (
+                                <li>📍 {user.location}</li>
+                            ) : null}
+
                             <li>🗓 Joined {format(new Date(user.createdAt), 'MMM yyyy')}</li>
-                            {isEditing ? (
+
+                            {isOwner && isEditing ? (
+                                <li>
+                                    <div className="flex gap-2">
+                                        🔗{' '}
+                                        <input
+                                            type="text"
+                                            value={formData.website}
+                                            onChange={e => setFormData({ ...formData, website: e.target.value })}
+                                            className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
+                                        />
+                                    </div>
+                                </li>
+                            ) : user.website ? (
                                 <li>
                                     🔗{' '}
-                                    <input
-                                        type="text"
-                                        value={formData.website}
-                                        onChange={e => setFormData({ ...formData, website: e.target.value })}
-                                        placeholder="https://"
-                                        className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
-                                    />
+                                    <a
+                                        href={user.website}
+                                        className="text-blue-700 hover:underline"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {user.website}
+                                    </a>
                                 </li>
-                            ) : (
-                                user.website && (
-                                    <li>
-                                        🔗{' '}
-                                        <a
-                                            href={user.website}
-                                            className="text-blue-700 hover:underline"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {user.website}
-                                        </a>
-                                    </li>
-                                )
-                            )}
+                            ) : null}
                         </ul>
 
-                        {/* Social URLs (only in editing) */}
-                        {isEditing && (
+                        {/* social URLs when editing */}
+                        {isOwner && isEditing && (
                             <ul className="space-y-2 text-gray-400 pt-2">
                                 <li>
-                                    <i className="bi bi-twitter-x text-blue-700" />{' '}
-                                    <input
-                                        type="text"
-                                        value={formData.twitter}
-                                        onChange={e => setFormData({ ...formData, twitter: e.target.value })}
-                                        placeholder="https://twitter.com/…"
-                                        className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
-                                    />
+                                    <div className="flex gap-2">
+                                        <i className="bi bi-twitter-x text-blue-700" />{' '}
+                                        <input
+                                            type="text"
+                                            value={formData.twitter}
+                                            onChange={e => setFormData({ ...formData, twitter: e.target.value })}
+                                            className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
+                                        />
+                                    </div>
                                 </li>
                                 <li>
-                                    <i className="bi bi-linkedin text-blue-700" />{' '}
-                                    <input
-                                        type="text"
-                                        value={formData.linkedin}
-                                        onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
-                                        placeholder="https://linkedin.com/in/…"
-                                        className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
-                                    />
+                                    <div className="flex gap-2">
+                                        <i className="bi bi-linkedin text-blue-700" />{' '}
+                                        <input
+                                            type="text"
+                                            value={formData.linkedin}
+                                            onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
+                                            className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
+                                        />
+                                    </div>
+
                                 </li>
                                 <li>
-                                    <i className="bi bi-github text-blue-700" />{' '}
-                                    <input
-                                        type="text"
-                                        value={formData.github}
-                                        onChange={e => setFormData({ ...formData, github: e.target.value })}
-                                        placeholder="https://github.com/…"
-                                        className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
-                                    />
+                                    <div className="flex gap-2">
+                                        <i className="bi bi-github text-blue-700" />{' '}
+                                        <input
+                                            type="text"
+                                            value={formData.github}
+                                            onChange={e => setFormData({ ...formData, github: e.target.value })}
+                                            className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
+                                        />
+                                    </div>
                                 </li>
                             </ul>
                         )}
 
-                        {/* icon bar */}
+                        {/* social icons when not editing */}
                         {!isEditing && (
                             <div className="text-blue-700 mt-4 gap-4 flex">
                                 {['twitter', 'linkedin', 'github'].map(key =>
@@ -340,31 +343,12 @@ const ProfilePage = () => {
                                         <Link
                                             key={r._id}
                                             to={`/profile/${user.username}/repos/${r._id}`}
-                                            className="block h-full"
+                                            className="block"
                                         >
-                                            <div className="flex flex-col h-full border-2 border-gray-700 duration-500 hover:border-white rounded-lg overflow-hidden">
-                                                {/* content grows to fill */}
-                                                <div className="p-4 flex-grow">
-                                                    <h3 className="text-lg font-bold mb-2">{r.name}</h3>
-                                                    <p className="text-gray-400 text-sm mb-4 truncate">
-                                                        {r.summary}
-                                                    </p>
-                                                </div>
-                                                {/* footer */}
-                                                <div className="px-4 py-2 bg-gray-800 flex items-center justify-between">
-                                                    <div className="flex gap-2">
-                                                        <span className="bg-blue-400 text-white px-2 py-1 rounded text-sm">
-                                                            {user.username}
-                                                        </span>
-                                                        <span className="bg-blue-400 text-white px-2 py-1 rounded text-sm">
-                                                            {r.season}&nbsp;•&nbsp;{new Date(r.createdAt).getFullYear()}
-                                                        </span>
-                                                    </div>
-                                                    <span className="bg-yellow-400 text-black px-2 py-1 rounded text-sm font-semibold">
-                                                        <i className="bi bi-star-fill"></i>&nbsp;{r.stars}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                            <RepoCard
+                                                repo={r}
+                                                className="duration-500 hover:border-white"
+                                            />
                                         </Link>
                                     ))}
                                 </div>
