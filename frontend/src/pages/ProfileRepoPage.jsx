@@ -1,4 +1,3 @@
-// src/pages/ProfileRepoPage.jsx
 import React, { useState, useEffect, useContext } from 'react'
 import { format } from 'date-fns'
 import RepoCard from '../components/RepoCard'
@@ -13,7 +12,7 @@ export default function ProfileRepoPage() {
   const token = localStorage.getItem('token')
   const isOwner = currentUser?.username === username
 
-  // profile + repos state
+  // profile; repos state
   const [user, setUser]   = useState(null)
   const [repos, setRepos] = useState([])
 
@@ -30,7 +29,7 @@ export default function ProfileRepoPage() {
     github: '',
   })
 
-  // search + pagination
+  // search
   const [searchActive, setSearchActive] = useState(false)
   const [searchQuery, setSearchQuery]   = useState('')
   const [visibleCount, setVisibleCount] = useState(3)
@@ -38,14 +37,14 @@ export default function ProfileRepoPage() {
     if (searchActive) setVisibleCount(3)
   }, [searchActive, searchQuery])
 
-  // icon classes
+  // icons
   const icons = {
     twitter: 'bi bi-twitter-x',
     linkedin: 'bi bi-linkedin',
     github: 'bi bi-github',
   }
 
-  // fetch the user’s public profile
+  // fetch user’s public profile
   useEffect(() => {
     async function fetchProfile() {
       try {
@@ -71,7 +70,7 @@ export default function ProfileRepoPage() {
     fetchProfile()
   }, [username, navigate])
 
-  // fetch *only* that user’s public repos
+  // fetch onlu user’s public repos
   useEffect(() => {
     async function fetchRepos() {
       try {
@@ -136,7 +135,7 @@ export default function ProfileRepoPage() {
     setIsEditing(false)
   }
 
-  // filter + paginate
+  // filter
   const filtered = searchActive
     ? repos.filter(r =>
         r.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
@@ -150,7 +149,7 @@ export default function ProfileRepoPage() {
     <main className="font-mono bg-black min-h-screen">
       <section className="py-8 text-white">
         <div className="px-24 grid grid-cols-1 md:grid-cols-3 gap-16">
-          {/* — left column — */}
+          {/* left */}
           <div className="space-y-4">
             <img
               src={user.avatarUrl || defaultAvatar}
@@ -225,7 +224,7 @@ export default function ProfileRepoPage() {
               )}
             </div>
 
-            {/* Stats & socials */}
+            {/* stats & socials */}
             <ul className="space-y-2 text-gray-400">
               <li>👥 {user.followers} followers</li>
               <li>👀 {user.following} following</li>
@@ -285,7 +284,7 @@ export default function ProfileRepoPage() {
                 )}
               </li>
 
-              {/* social URL inputs */}
+              {/* social URL when edit */}
               {isEditing && (
                 <>
                   <li className="flex gap-2">
@@ -348,7 +347,7 @@ export default function ProfileRepoPage() {
             )}
           </div>
 
-          {/* — right column — */}
+          {/* right column */}
           <div className="w-full mx-auto md:col-span-2 space-y-4">
             <div className="flex justify-between">
               {/* search */}

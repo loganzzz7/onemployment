@@ -1,4 +1,3 @@
-// src/pages/ConnectPage.jsx
 import React, { useState, useEffect } from 'react'
 import RepoCard from '../components/RepoCard'
 import { Link } from 'react-router-dom'
@@ -13,7 +12,7 @@ export default function ConnectPage() {
   const [searchActive, setSearchActive] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // reset pagination when a new search starts
+  // reset pagination when new search start
   useEffect(() => {
     if (searchActive) setVisibleCount(3)
   }, [searchActive, searchQuery])
@@ -22,7 +21,6 @@ export default function ConnectPage() {
   useEffect(() => {
     async function load() {
       try {
-        // include auth header if user is logged in
         const token = localStorage.getItem('token')
         const headers = token
           ? { Authorization: `Bearer ${token}` }

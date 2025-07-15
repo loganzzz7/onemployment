@@ -87,7 +87,7 @@ router.get('/:id', async (req, res) => {
       try {
         const payload = jwt.verify(auth.slice(7), process.env.JWT_SECRET)
         userId = payload.id
-      } catch { /* ignore invalid token */ }
+      } catch { /* ignore bad token */ }
     }
 
     const repo = await Repo.findById(req.params.id)
@@ -120,7 +120,7 @@ router.patch('/:id', authMiddle, async (req, res) => {
       repo.stars = Math.max(0, repo.stars + (willStar ? 1 : -1))
     }
 
-    const allowed = ['name','summary','readme','isPublic','isPinned','isStarred']
+    const allowed = ['name', 'summary', 'readme', 'isPublic', 'isPinned', 'isStarred']
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
         repo[key] = req.body[key]
@@ -128,7 +128,7 @@ router.patch('/:id', authMiddle, async (req, res) => {
     }
 
     await repo.save()
-    const populated = await repo.populate('user','username avatarUrl')
+    const populated = await repo.populate('user', 'username avatarUrl')
     res.json(populated)
   } catch (err) {
     console.error('Failed to patch repo:', err)
@@ -179,37 +179,48 @@ router.patch('/:id/commits/:commitId', authMiddle, async (req, res) => {
   }
 })
 
-// POST /api/repos/:id/commits/:commitId/comments -> add comment (only owner)
-router.post('/:id/commits/:commitId/comments', authMiddle, async (req, res) => {
-  try {
-    const { id, commitId } = req.params
-    const { text } = req.body
-    if (!text?.trim()) {
-      return res.status(400).json({ error: 'Comment text is required.' })
+// POST /api/repos/:id/commits/:commitId/comments —> add a new comment to a commit
+router.post(
+  '/:id/commits/:commitId/comments',
+  authMiddle,
+  async (req, res) => {
+    try {
+      const { id, commitId } = req.params
+      const { text } = req.body
+      if (!text || !text.trim()) {
+        return res.status(400).json({ error: 'Comment text is required.' })
+      }
+
+      // load the repo (any authenticated user can comment)
+      const repo = await Repo.findById(id)
+      if (!repo) {
+        return res.status(404).json({ error: 'Repo not found.' })
+      }
+
+      const commit = repo.commits.id(commitId)
+      if (!commit) {
+        return res.status(404).json({ error: 'Commit not found.' })
+      }
+
+      // push new comment
+      const commentId = new Types.ObjectId()
+      commit.comments.push({
+        _id: commentId,
+        author: req.userId,
+        text: text.trim(),
+        createdAt: new Date(),
+      })
+
+      await repo.save()
+
+      await repo.populate('commits.comments.author', 'username avatarUrl')
+      const newComment = repo.commits.id(commentId)
+      res.status(201).json(newComment)
+    } catch (err) {
+      console.error('Failed to add comment:', err)
+      res.status(500).json({ error: err.message })
     }
-
-    const repo = await Repo.findOne({ _id: id, user: req.userId })
-    if (!repo) return res.status(404).json({ error: 'Repo not found or not yours.' })
-
-    const commit = repo.commits.id(commitId)
-    if (!commit) return res.status(404).json({ error: 'Commit not found.' })
-
-    const commentId = new Types.ObjectId()
-    commit.comments.push({
-      _id: commentId,
-      author: req.userId,
-      text: text.trim(),
-      createdAt: new Date(),
-    })
-
-    await repo.save()
-    await repo.populate('commits.comments.author','username avatarUrl')
-    const newComment = repo.commits.id(commentId)
-    res.status(201).json(newComment)
-  } catch (err) {
-    console.error('Failed to add comment:', err)
-    res.status(500).json({ error: err.message })
   }
-})
+)
 
 export default router

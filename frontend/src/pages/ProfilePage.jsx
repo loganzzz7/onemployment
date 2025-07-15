@@ -1,4 +1,3 @@
-// src/pages/ProfilePage.jsx
 import React, { useState, useEffect, useContext } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { format, subDays } from 'date-fns'
@@ -126,7 +125,7 @@ const ProfilePage = () => {
         <main className="font-mono bg-black min-h-screen">
             <section className="py-8 text-white">
                 <div className="px-24 grid grid-cols-1 md:grid-cols-3 gap-16">
-                    {/* — left column — */}
+                    {/* left */}
                     <div className="space-y-4">
                         <img
                             src={user.avatarUrl || defaultAvatar}
@@ -207,7 +206,7 @@ const ProfilePage = () => {
                             )}
                         </div>
 
-                        {/* Stats & socials */}
+                        {/* stats & socials */}
                         <ul className="space-y-2 text-gray-400">
                             <li>👥 {user.followers} followers</li>
                             <li>👀 {user.following} following</li>

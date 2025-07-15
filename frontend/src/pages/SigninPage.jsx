@@ -1,12 +1,17 @@
 import React, { useState, useContext } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { AuthContext } from '../contexts/AuthContext'
+
+
 
 const SigninPage = () => {
   const { login } = useContext(AuthContext)
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const location = useLocation()
+  // back to commit after signin
+  const from = location.state?.from || null
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -22,9 +27,10 @@ const SigninPage = () => {
       })
       const data = await res.json()
       if (res.ok) {
-        // update context (and localStorage) in one call:
+        // update context (and localStorage)
         login(data.token, data.user)
-        navigate(`/profile/${data.user.username}`)
+        // go back to where user came from; else normal
+        navigate(from || `/profile/${data.user.username}`, { replace: true })
       } else {
         setError(data.error)
       }

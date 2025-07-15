@@ -1,4 +1,3 @@
-// src/pages/RepoPage.jsx
 import React, { useState, useEffect, useContext } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { format } from 'date-fns'
@@ -29,7 +28,7 @@ export default function RepoPage() {
   const [isEditingReadme, setIsEditingReadme] = useState(false)
   const [formReadme, setFormReadme]           = useState('')
 
-  // “Add Commit” dialog
+  // Add Commit
   const [isAddOpen, setIsAddOpen]           = useState(false)
   const [newSummary, setNewSummary]         = useState('')
   const [newDescription, setNewDescription] = useState('')
@@ -68,7 +67,7 @@ export default function RepoPage() {
     )
   }
 
-  // only the owner may mutate
+  // only the owner can chaneg
   const isOwner = currentUser?.username === repo.user.username
 
   // PATCH “About”
@@ -112,7 +111,6 @@ export default function RepoPage() {
     setIsAddOpen(false)
     setNewSummary('')
     setNewDescription('')
-    // reload repo
     const fresh = await fetch(`/api/repos/${repoid}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     }).then(r => r.json())
@@ -147,7 +145,7 @@ export default function RepoPage() {
 
   return (
     <main className="font-mono min-h-screen bg-black text-white">
-      {/* — header — */}
+      {/* head */}
       <div className="py-4 px-6 flex items-center justify-between border-b-2 border-gray-800">
         <div className="flex items-center space-x-3">
           <Link to={`/profile/${repo.user.username}`}>
@@ -204,7 +202,7 @@ export default function RepoPage() {
         )}
       </div>
 
-      {/* — Add Commit Dialog — */}
+      {/* add commit Dialog */}
       {isOwner && (
         <Dialog open={isAddOpen} onClose={() => setIsAddOpen(false)} className="relative z-50 font-mono">
           <DialogBackdrop className="fixed inset-0 bg-black/80" />
@@ -246,7 +244,7 @@ export default function RepoPage() {
         </Dialog>
       )}
 
-      {/* — body — */}
+      {/* body */}
       <div className="mx-auto px-16 py-8 grid grid-cols-1 md:grid-cols-4 gap-16">
         {/* sidebar */}
         <aside className="flex flex-col gap-8">

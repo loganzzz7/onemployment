@@ -1,9 +1,7 @@
-// src/components/RepoCard.jsx
 import React from 'react'
 import { format } from 'date-fns'
 
 const RepoCard = ({ repo, className = "" }) => {
-  // owner username (either populated object or just an ID/string)
   const owner =
     typeof repo.user === 'object'
       ? repo.user.username

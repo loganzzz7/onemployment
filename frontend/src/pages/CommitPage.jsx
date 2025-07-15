@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react'
-import { useParams, Link, Navigate, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect, useContext } from 'react'
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { format } from 'date-fns'
 import avatar from "../assets/logo.png"
+import { AuthContext } from '../contexts/AuthContext'
 
 const CommitPage = () => {
   const { username, repoid, commitid } = useParams()
   const token = localStorage.getItem('token')
-  const navigate = useNavigate()
+  const { user: currentUser } = useContext(AuthContext)
   const isAuthenticated = Boolean(token)
+  const isOwner = currentUser?.username === username
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const [repo, setRepo] = useState(null)
   const [commit, setCommit] = useState(null)
@@ -23,9 +27,7 @@ const CommitPage = () => {
   useEffect(() => {
     async function load() {
       try {
-        const headers = token
-          ? { Authorization: `Bearer ${token}` }
-          : {}
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
         const res = await fetch(`/api/repos/${repoid}`, { headers })
         if (!res.ok) throw new Error('Failed to load repo')
         const data = await res.json()
@@ -52,18 +54,16 @@ const CommitPage = () => {
 
   const commitNumber = repo.commits.findIndex(c => c._id === commitid) + 1
 
+  // only the owner can save description
   async function saveDesc() {
-    const res = await fetch(
-      `/api/repos/${repoid}/commits/${commitid}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ description: formDesc }),
-      }
-    )
+    const res = await fetch(`/api/repos/${repoid}/commits/${commitid}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ description: formDesc }),
+    })
     if (res.ok) {
       const updated = await res.json()
       setCommit(updated)
@@ -71,6 +71,7 @@ const CommitPage = () => {
     }
   }
 
+  // any user may post a comment
   async function submitComment() {
     try {
       const res = await fetch(
@@ -85,7 +86,7 @@ const CommitPage = () => {
         }
       )
       if (!res.ok) throw new Error('Failed to post comment')
-      // reload entire repo to pick up new comment
+      // reload to refresh comment
       const freshRes = await fetch(`/api/repos/${repoid}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       })
@@ -103,7 +104,7 @@ const CommitPage = () => {
 
   return (
     <main className="font-mono min-h-screen bg-black text-white">
-      {/* — Header — */}
+      {/* head */}
       <header className="py-4 px-6 flex items-center justify-between border-b-2 border-gray-800">
         <div className="flex items-center space-x-3">
           <Link to={`/profile/${username}`}>
@@ -130,7 +131,7 @@ const CommitPage = () => {
         </div>
       </header>
 
-      {/* — Summary & Description — */}
+      {/* summary and desc */}
       <section className="py-8 px-16 flex flex-col gap-8">
         <div className="bg-gray-900 rounded-lg p-6 flex items-center justify-between border-2 border-gray-700">
           <div className="flex items-center space-x-4">
@@ -154,7 +155,7 @@ const CommitPage = () => {
         <div className="bg-gray-900 shadow rounded-lg p-6 border-2 border-gray-700">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-white">Description:</h2>
-            {isAuthenticated && (
+            {isOwner ? (
               isEditingDesc ? (
                 <div className="space-x-2">
                   <button
@@ -174,7 +175,7 @@ const CommitPage = () => {
                   <i className="bi bi-pencil-square" />
                 </button>
               )
-            )}
+            ) : null}
           </div>
           {isEditingDesc ? (
             <textarea
@@ -238,7 +239,7 @@ const CommitPage = () => {
               >Add a comment</button>
             ) : (
               <button
-                onClick={() => navigate('/signin')}
+                onClick={() => navigate('/signin', { state: { from: location.pathname } })}
                 className="px-6 py-2 bg-blue-900 text-white font-semibold rounded duration-500 hover:bg-blue-700"
               >Sign in to comment</button>
             )}

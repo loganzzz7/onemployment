@@ -70,7 +70,7 @@ const Navbar = () => {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to create repo')
 
-      // success!
+      // success
       console.log('Created repo:', data)
       setIsAddOpen(false)
       setNewName('')
@@ -84,7 +84,7 @@ const Navbar = () => {
     }
   }
 
-  if (loading) return null // or a placeholder
+  if (loading) return null
 
   return (
     <nav className="font-mono bg-black selection:bg-purple-800 border-b-2 border-gray-800">
