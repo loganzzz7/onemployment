@@ -5,8 +5,9 @@ import React, { createContext, useState, useEffect, useCallback } from 'react'
 export const AuthContext = createContext({
     user: null,
     loading: true,
-    login: user => { },
-    logout: () => { }
+    login: () => { },
+    logout: () => { },
+    setUser: () => { }
 })
 
 export function AuthProvider({ children }) {
@@ -50,7 +51,7 @@ export function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, logout, setUser }}>
             {children}
         </AuthContext.Provider>
     )

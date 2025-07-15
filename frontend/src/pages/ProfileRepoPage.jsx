@@ -1,41 +1,96 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { format } from 'date-fns'
 import RepoCard from '../components/RepoCard'
+import { format } from 'date-fns'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import defaultAvatar from '../assets/logo.png'
 import { AuthContext } from '../contexts/AuthContext'
 
 export default function ProfileRepoPage() {
-  const { user: currentUser, logout } = useContext(AuthContext)
+  const { user: currentUser, setUser: setAuthUser, logout } = useContext(AuthContext)
   const navigate = useNavigate()
   const { username } = useParams()
   const token = localStorage.getItem('token')
   const isOwner = currentUser?.username === username
 
-  // profile; repos state
-  const [user, setUser]   = useState(null)
+  // profile + repos
+  const [user, setUser] = useState(null)
   const [repos, setRepos] = useState([])
 
-  // edit form state
+  // follow/unfollow state
+  const [isFollowing, setIsFollowing] = useState(false)
+
+  // edit form (owner only)
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData]   = useState({
-    name: '',
-    bio: '',
-    company: '',
-    location: '',
-    website: '',
-    twitter: '',
-    linkedin: '',
-    github: '',
+  const [formData, setFormData] = useState({
+    name: '', bio: '', company: '', location: '',
+    website: '', twitter: '', linkedin: '', github: '',
   })
 
-  // search
+  // search + pagination
   const [searchActive, setSearchActive] = useState(false)
-  const [searchQuery, setSearchQuery]   = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(3)
   useEffect(() => {
     if (searchActive) setVisibleCount(3)
   }, [searchActive, searchQuery])
+
+  // initialize follow state
+  useEffect(() => {
+    if (!isOwner && currentUser && user) {
+      const me = Array.isArray(currentUser.following)
+        ? currentUser.following.map(String)
+        : []
+      setIsFollowing(me.includes(String(user._id)))
+    }
+  }, [currentUser, user, isOwner])
+
+  // follow API
+  async function handleFollow() {
+    const res = await fetch(`/api/users/${username}/follow`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!res.ok) return
+
+    // update their followers list
+    setUser(u => ({
+      ...u,
+      followers: Array.isArray(u.followers)
+        ? [...u.followers, currentUser._id]
+        : [currentUser._id]
+    }))
+    // update my following in context
+    setAuthUser(cu => ({
+      ...cu,
+      following: Array.isArray(cu.following)
+        ? [...cu.following, user._id]
+        : [user._id]
+    }))
+    setIsFollowing(true)
+  }
+
+  // unfollow API
+  async function handleUnfollow() {
+    const res = await fetch(`/api/users/${username}/follow`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!res.ok) return
+
+    setUser(u => ({
+      ...u,
+      followers: Array.isArray(u.followers)
+        ? u.followers.filter(id => String(id) !== String(currentUser._id))
+        : []
+    }))
+    setAuthUser(cu => ({
+      ...cu,
+      following: Array.isArray(cu.following)
+        ? cu.following.filter(id => String(id) !== String(user._id))
+        : []
+    }))
+    setIsFollowing(false)
+  }
 
   // icons
   const icons = {
@@ -44,7 +99,7 @@ export default function ProfileRepoPage() {
     github: 'bi bi-github',
   }
 
-  // fetch user’s public profile
+  // fetch profile
   useEffect(() => {
     async function fetchProfile() {
       try {
@@ -53,44 +108,38 @@ export default function ProfileRepoPage() {
         const { user: u } = await res.json()
         setUser(u)
         setFormData({
-          name:     u.name,
-          bio:      u.bio || '',
-          company:  u.company || '',
+          name: u.name,
+          bio: u.bio || '',
+          company: u.company || '',
           location: u.location || '',
-          website:  u.website || '',
-          twitter:  u.socials.twitter || '',
+          website: u.website || '',
+          twitter: u.socials.twitter || '',
           linkedin: u.socials.linkedin || '',
-          github:   u.socials.github || '',
+          github: u.socials.github || '',
         })
-      } catch (err) {
-        console.error(err)
+      } catch {
         navigate('/', { replace: true })
       }
     }
     fetchProfile()
   }, [username, navigate])
 
-  // fetch onlu user’s public repos
+  // fetch repos
   useEffect(() => {
     async function fetchRepos() {
       try {
-        const res  = await fetch(`/api/repos/all?user=${username}`)
+        const res = await fetch(`/api/repos/all?user=${username}`)
         if (!res.ok) throw new Error('Failed to load repos')
-        const data = await res.json()
-        setRepos(data)
-      } catch (err) {
-        console.error(err)
+        setRepos(await res.json())
+      } catch {
+        console.error('Could not load repos')
       }
     }
     fetchRepos()
   }, [username])
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        Loading...
-      </div>
-    )
+    return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>
   }
 
   // logout
@@ -99,7 +148,7 @@ export default function ProfileRepoPage() {
     navigate('/signin', { replace: true })
   }
 
-  // save profile edits (only owner)
+  // save edits
   async function handleSave() {
     try {
       const res = await fetch('/api/auth/me', {
@@ -115,31 +164,29 @@ export default function ProfileRepoPage() {
       setUser(data.user)
       setIsEditing(false)
     } catch (err) {
-      console.error(err)
       alert(err.message)
     }
   }
 
-  // cancel editing
   function handleCancel() {
     setFormData({
-      name:     user.name,
-      bio:      user.bio || '',
-      company:  user.company || '',
+      name: user.name,
+      bio: user.bio || '',
+      company: user.company || '',
       location: user.location || '',
-      website:  user.website || '',
-      twitter:  user.socials.twitter || '',
+      website: user.website || '',
+      twitter: user.socials.twitter || '',
       linkedin: user.socials.linkedin || '',
-      github:   user.socials.github || '',
+      github: user.socials.github || '',
     })
     setIsEditing(false)
   }
 
-  // filter
+  // filter + paginate
   const filtered = searchActive
     ? repos.filter(r =>
-        r.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
-      )
+      r.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+    )
     : repos
   const visible = filtered.slice(0, visibleCount)
   const loadMore = () =>
@@ -149,6 +196,7 @@ export default function ProfileRepoPage() {
     <main className="font-mono bg-black min-h-screen">
       <section className="py-8 text-white">
         <div className="px-24 grid grid-cols-1 md:grid-cols-3 gap-16">
+
           {/* left */}
           <div className="space-y-4">
             <img
@@ -166,7 +214,7 @@ export default function ProfileRepoPage() {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Name"
-                  className="w-11/12 mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-white focus:outline-none"
+                  className="w-full mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-white focus:outline-none"
                 />
               ) : (
                 user.name
@@ -183,94 +231,123 @@ export default function ProfileRepoPage() {
                   setFormData({ ...formData, bio: e.target.value })
                 }
                 placeholder="Write a bio..."
-                className="w-11/12 mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-gray-400 focus:outline-none"
+                className="w-full mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-gray-400 focus:outline-none"
               />
             ) : (
               <p className="mt-4 text-gray-400">{user.bio}</p>
             )}
 
-            {/* Edit / Save / Cancel / Logout */}
+            {/* Edit/Save/Cancel/Logout OR Follow/Unfollow */}
             <div className="flex gap-4 w-11/12 sm:w-full">
-              {isOwner && isEditing ? (
+              {isOwner ? (
                 <>
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={handleSave}
+                        className="bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                      >Save</button>
+                      <button
+                        onClick={handleCancel}
+                        className="bg-gray-600 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-gray-500"
+                      >Cancel</button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="bg-blue-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                    >
+                      <i className="bi bi-gear-wide-connected" /> Edit Profile
+                    </button>
+                  )}
                   <button
-                    onClick={handleSave}
-                    className="bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                    onClick={handleLogout}
+                    className="bg-red-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-red-700"
                   >
-                    Save
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    className="bg-gray-600 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-gray-500"
-                  >
-                    Cancel
+                    <i className="bi bi-box-arrow-right" /> Log Out
                   </button>
                 </>
-              ) : isOwner ? (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="bg-blue-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
-                >
-                  <i className="bi bi-gear-wide-connected" /> Edit Profile
-                </button>
-              ) : null}
-              {isOwner && (
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-red-700"
-                >
-                  <i className="bi bi-box-arrow-right" /> Log Out
-                </button>
+              ) : (
+                isFollowing ? (
+                  <button
+                    onClick={handleUnfollow}
+                    className="bg-red-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-red-700"
+                  >Unfollow</button>
+                ) : (
+                  <button
+                    onClick={handleFollow}
+                    className="bg-blue-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                  >Follow</button>
+                )
               )}
             </div>
 
             {/* stats & socials */}
             <ul className="space-y-2 text-gray-400">
-              <li>👥 {user.followers} followers</li>
-              <li>👀 {user.following} following</li>
-              <li className="flex gap-2">
-                🏢{' '}
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={formData.company}
-                    onChange={e =>
-                      setFormData({ ...formData, company: e.target.value })
-                    }
-                    className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
-                  />
-                ) : (
-                  user.company || '—'
-                )}
+              <li>
+                👥{' '}
+                {Array.isArray(user.followers)
+                  ? user.followers.length
+                  : user.followers || 0}{' '}
+                followers
               </li>
-              <li className="flex gap-2">
-                📍{' '}
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={e =>
-                      setFormData({ ...formData, location: e.target.value })
-                    }
-                    className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
-                  />
-                ) : (
-                  user.location || '—'
-                )}
+              <li>
+                👀{' '}
+                {Array.isArray(user.following)
+                  ? user.following.length
+                  : user.following || 0}{' '}
+                following
               </li>
+
+              {isOwner && isEditing ? (
+                <li>
+                  <div className="flex gap-2">
+                    🏢{' '}
+                    <input
+                      type="text"
+                      value={formData.company}
+                      onChange={e => setFormData({ ...formData, company: e.target.value })}
+                      className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
+                    />
+                  </div>
+                </li>
+              ) : user.company ? (
+                <li>🏢 {user.company}</li>
+              ) : null}
+
+              {isOwner && isEditing ? (
+                <li>
+                  <div className="flex gap-2">
+                    📍{' '}
+                    <input
+                      type="text"
+                      value={formData.location}
+                      onChange={e => setFormData({ ...formData, location: e.target.value })}
+                      className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
+                    />
+                  </div>
+                </li>
+              ) : user.location ? (
+                <li>📍 {user.location}</li>
+              ) : null}
+
               <li>🗓 Joined {format(new Date(user.createdAt), 'MMM yyyy')}</li>
-              <li className="flex gap-2">
-                🔗{' '}
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={formData.website}
-                    onChange={e =>
-                      setFormData({ ...formData, website: e.target.value })
-                    }
-                    className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
-                  />
-                ) : user.website ? (
+
+              {isOwner && isEditing ? (
+                <li>
+                  <div className="flex gap-2">
+                    🔗{' '}
+                    <input
+                      type="text"
+                      value={formData.website}
+                      onChange={e => setFormData({ ...formData, website: e.target.value })}
+                      className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
+                    />
+                  </div>
+                </li>
+              ) : user.website ? (
+                <li>
+                  🔗{' '}
                   <a
                     href={user.website}
                     className="text-blue-700 hover:underline"
@@ -279,57 +356,53 @@ export default function ProfileRepoPage() {
                   >
                     {user.website}
                   </a>
-                ) : (
-                  '—'
-                )}
-              </li>
+                </li>
+              ) : null}
+            </ul>
 
-              {/* social URL when edit */}
-              {isEditing && (
-                <>
-                  <li className="flex gap-2">
-                    <i className="bi bi-twitter-x text-blue-700" />
+            {/* social URLs when editing */}
+            {isOwner && isEditing && (
+              <ul className="space-y-2 text-gray-400 pt-2">
+                <li>
+                  <div className="flex gap-2">
+                    <i className="bi bi-twitter-x text-blue-700" />{' '}
                     <input
                       type="text"
                       value={formData.twitter}
-                      onChange={e =>
-                        setFormData({ ...formData, twitter: e.target.value })
-                      }
-                      placeholder="https://twitter.com/…"
+                      onChange={e => setFormData({ ...formData, twitter: e.target.value })}
                       className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
                     />
-                  </li>
-                  <li className="flex gap-2">
-                    <i className="bi bi-linkedin text-blue-700" />
+                  </div>
+                </li>
+                <li>
+                  <div className="flex gap-2">
+                    <i className="bi bi-linkedin text-blue-700" />{' '}
                     <input
                       type="text"
                       value={formData.linkedin}
-                      onChange={e =>
-                        setFormData({ ...formData, linkedin: e.target.value })
-                      }
-                      placeholder="https://linkedin.com/in/…"
+                      onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
                       className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
                     />
-                  </li>
-                  <li className="flex gap-2">
-                    <i className="bi bi-github text-blue-700" />
+                  </div>
+
+                </li>
+                <li>
+                  <div className="flex gap-2">
+                    <i className="bi bi-github text-blue-700" />{' '}
                     <input
                       type="text"
                       value={formData.github}
-                      onChange={e =>
-                        setFormData({ ...formData, github: e.target.value })
-                      }
-                      placeholder="https://github.com/…"
+                      onChange={e => setFormData({ ...formData, github: e.target.value })}
                       className="w-full bg-transparent border-b border-gray-600 text-white focus:outline-none"
                     />
-                  </li>
-                </>
-              )}
-            </ul>
+                  </div>
+                </li>
+              </ul>
+            )}
 
-            {/* icon bar */}
+            {/* social icons when not editing */}
             {!isEditing && (
-              <div className="mt-4 flex gap-4 text-2xl text-blue-700">
+              <div className="text-blue-700 mt-4 gap-4 flex">
                 {['twitter', 'linkedin', 'github'].map(key =>
                   formData[key] ? (
                     <a
@@ -337,7 +410,7 @@ export default function ProfileRepoPage() {
                       href={formData[key]}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="duration-500 hover:text-white"
+                      className="duration-500 hover:text-white text-2xl"
                     >
                       <i className={icons[key]} />
                     </a>
@@ -347,7 +420,7 @@ export default function ProfileRepoPage() {
             )}
           </div>
 
-          {/* right column */}
+          {/* right */}
           <div className="w-full mx-auto md:col-span-2 space-y-4">
             <div className="flex justify-between">
               {/* search */}

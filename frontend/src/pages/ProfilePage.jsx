@@ -8,7 +8,7 @@ import defaultAvatar from '../assets/logo.png'
 import { AuthContext } from '../contexts/AuthContext'
 
 const ProfilePage = () => {
-    const { user: currentUser, logout } = useContext(AuthContext)
+    const { user: currentUser, setUser: setAuthUser, logout } = useContext(AuthContext)
     const { username } = useParams()
     const navigate = useNavigate()
     const token = localStorage.getItem('token')
@@ -16,6 +16,65 @@ const ProfilePage = () => {
 
     const [user, setUser] = useState(null)
     const [repos, setRepos] = useState([])
+    const [isFollowing, setIsFollowing] = useState(false)
+
+    useEffect(() => {
+        if (!isOwner && currentUser && user) {
+            const followingList = currentUser.following || []
+            setIsFollowing(
+                followingList.map(id => id.toString()).includes(user._id.toString())
+            )
+        }
+    }, [currentUser, user, isOwner])
+
+    async function handleFollow() {
+      const res = await fetch(`/api/users/${username}/follow`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) return
+
+      setUser(u => ({
+        ...u,
+        followers: Array.isArray(u.followers)
+          ? [...u.followers, currentUser._id]
+          : [(currentUser._id)]
+      }))
+
+      setAuthUser(cu => ({
+        ...cu,
+        following: Array.isArray(cu.following)
+          ? [...cu.following, user._id]
+          : [user._id]
+      }))
+
+      setIsFollowing(true)
+    }
+
+    async function handleUnfollow() {
+      const res = await fetch(`/api/users/${username}/follow`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) return
+
+      setUser(u => ({
+        ...u,
+        followers: Array.isArray(u.followers)
+          ? u.followers.filter(id => id.toString() !== currentUser._id.toString())
+          : []
+      }))
+
+      setAuthUser(cu => ({
+        ...cu,
+        following: Array.isArray(cu.following)
+          ? cu.following.filter(id => id.toString() !== user._id.toString())
+          : []
+      }))
+
+      setIsFollowing(false)
+    }
+
     const [isEditing, setIsEditing] = useState(false)
     const [formData, setFormData] = useState({
         name: '',
@@ -139,7 +198,7 @@ const ProfilePage = () => {
                                     type="text"
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-11/12 mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-white focus:outline-none"
+                                    className="w-full mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-white focus:outline-none"
                                 />
                             ) : (
                                 user.name
@@ -151,65 +210,84 @@ const ProfilePage = () => {
                         {isOwner && isEditing ? (
                             <textarea
                                 rows={3}
+                                maxLength={200}
                                 value={formData.bio}
                                 onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                                className="w-11/12 mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-gray-400 focus:outline-none"
+                                className="w-full mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-gray-400 focus:outline-none"
                             />
                         ) : (
                             <p className="mt-4 text-gray-400">{user.bio}</p>
                         )}
 
-                        {/* Edit / Save / Cancel / Logout */}
+                        {/* Edit / Save / Cancel / Logout  OR  Follow/Unfollow */}
                         <div className="flex gap-4 w-11/12 sm:w-full">
-                            {isOwner && isEditing ? (
+                            {isOwner ? (
                                 <>
+                                    {isEditing ? (
+                                        <>
+                                            <button
+                                                onClick={handleSave}
+                                                className="bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                                            >
+                                                Save
+                                            </button>
+                                            <button
+                                                onClick={() => setIsEditing(false)}
+                                                className="bg-gray-600 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-gray-500"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button
+                                            onClick={() => setIsEditing(true)}
+                                            className="w-full bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                                        >
+                                            Edit Profile
+                                        </button>
+                                    )}
                                     <button
-                                        onClick={handleSave}
-                                        className="bg-blue-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                                        onClick={handleLogout}
+                                        className="w-full bg-red-900 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-red-700"
                                     >
-                                        Save
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setFormData({
-                                                name: user.name,
-                                                bio: user.bio || '',
-                                                company: user.company || '',
-                                                location: user.location || '',
-                                                website: user.website || '',
-                                                twitter: user.socials.twitter || '',
-                                                linkedin: user.socials.linkedin || '',
-                                                github: user.socials.github || '',
-                                            })
-                                            setIsEditing(false)
-                                        }}
-                                        className="bg-gray-600 text-white font-bold px-4 py-2 rounded duration-500 hover:bg-gray-500"
-                                    >
-                                        Cancel
+                                        <i className="bi bi-box-arrow-right" /> Log Out
                                     </button>
                                 </>
-                            ) : isOwner ? (
-                                <button
-                                    onClick={() => setIsEditing(true)}
-                                    className="bg-blue-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
-                                >
-                                    Edit Profile
-                                </button>
-                            ) : null}
-                            {isOwner && (
-                                <button
-                                    onClick={handleLogout}
-                                    className="bg-red-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-red-700"
-                                >
-                                    Log Out
-                                </button>
+                            ) : (
+                                isFollowing ? (
+                                    <button
+                                        onClick={handleUnfollow}
+                                        className="bg-red-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-red-700"
+                                    >
+                                        Unfollow
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleFollow}
+                                        className="bg-blue-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                                    >
+                                        Follow
+                                    </button>
+                                )
                             )}
                         </div>
 
                         {/* stats & socials */}
                         <ul className="space-y-2 text-gray-400">
-                            <li>👥 {user.followers} followers</li>
-                            <li>👀 {user.following} following</li>
+                            <li>
+                                👥{' '}
+                                {Array.isArray(user.followers)
+                                    ? user.followers.length
+                                    : user.followers || 0}{' '}
+                                followers
+                            </li>
+                            <li>
+                                👀{' '}
+                                {Array.isArray(user.following)
+                                    ? user.following.length
+                                    : user.following || 0}{' '}
+                                following
+                            </li>
 
                             {isOwner && isEditing ? (
                                 <li>
@@ -332,7 +410,7 @@ const ProfilePage = () => {
                         )}
                     </div>
 
-                    {/* — right column — */}
+                    {/* right */}
                     <div className="w-full md:col-span-2 space-y-8">
                         {pinnedRepos.length > 0 && (
                             <div>
