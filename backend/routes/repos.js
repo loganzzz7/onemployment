@@ -8,7 +8,7 @@ const { Types } = mongoose
 
 const router = express.Router()
 
-// POST /api/repos → create new repo
+// POST /api/repos -> create new repo
 router.post('/', authMiddle, async (req, res) => {
   try {
     const { name, summary, season, readme } = req.body
@@ -26,7 +26,7 @@ router.post('/', authMiddle, async (req, res) => {
   }
 })
 
-// GET /api/repos → list current user’s repos
+// GET /api/repos -> list current user’s repos
 router.get('/', authMiddle, async (req, res) => {
   try {
     const repos = await Repo
@@ -40,7 +40,7 @@ router.get('/', authMiddle, async (req, res) => {
   }
 })
 
-// GET /api/repos/user/:username → fetch a user’s profile
+// GET /api/repos/user/:username -> fetch a user’s profile
 router.get('/user/:username', async (req, res) => {
   try {
     const u = await User.findOne({ username: req.params.username })
@@ -53,7 +53,7 @@ router.get('/user/:username', async (req, res) => {
   }
 })
 
-// GET /api/repos/all → list public repos, optionally filter by ?user=username
+// GET /api/repos/all -> list public repos, optionally filter by ?user=username
 router.get('/all', async (req, res) => {
   try {
     const filter = { isPublic: true }
@@ -77,7 +77,7 @@ router.get('/all', async (req, res) => {
   }
 })
 
-// GET /api/repos/:id → fetch one repo (public for everyone, private only to owner)
+// GET /api/repos/:id -> fetch one repo (public for everyone, private only to owner)
 router.get('/:id', async (req, res) => {
   try {
     // try to extract userId from Bearer token if present
@@ -105,7 +105,7 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-// PATCH /api/repos/:id → update (only owner)
+// PATCH /api/repos/:id -> update (only owner)
 router.patch('/:id', authMiddle, async (req, res) => {
   try {
     const repo = await Repo.findOne({ _id: req.params.id, user: req.userId })
@@ -136,7 +136,7 @@ router.patch('/:id', authMiddle, async (req, res) => {
   }
 })
 
-// POST /api/repos/:id/commits → add commit (only owner)
+// POST /api/repos/:id/commits -> add commit (only owner)
 router.post('/:id/commits', authMiddle, async (req, res) => {
   try {
     const { summary, description } = req.body
@@ -159,7 +159,7 @@ router.post('/:id/commits', authMiddle, async (req, res) => {
   }
 })
 
-// PATCH /api/repos/:id/commits/:commitId → update commit (only owner)
+// PATCH /api/repos/:id/commits/:commitId -> update commit (only owner)
 router.patch('/:id/commits/:commitId', authMiddle, async (req, res) => {
   try {
     const { id, commitId } = req.params
@@ -179,7 +179,7 @@ router.patch('/:id/commits/:commitId', authMiddle, async (req, res) => {
   }
 })
 
-// POST /api/repos/:id/commits/:commitId/comments → add comment (only owner)
+// POST /api/repos/:id/commits/:commitId/comments -> add comment (only owner)
 router.post('/:id/commits/:commitId/comments', authMiddle, async (req, res) => {
   try {
     const { id, commitId } = req.params
