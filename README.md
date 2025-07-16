@@ -35,6 +35,6 @@ onEmployment is a social, repository-style platform where you “commit” daily
 - **Database:** MongoDB  
 - **Authentication:** JSON Web Tokens (JWT)  
 - **Storage:**  
-  - **Now:** local filesystem / GridFS  
+  - **Now:** local filesystem
   - **Future:** AWS S3 (presigned uploads, public URLs)  
 - **Styling:** Tailwind CSS
