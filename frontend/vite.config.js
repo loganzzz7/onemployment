@@ -7,14 +7,6 @@ export default defineConfig({
     react(),
     tsconfigPaths(),
   ],
-  css: {
-    postcss: {
-      plugins: [
-        require('tailwindcss'),
-        require('autoprefixer'),
-      ]
-    }
-  },
   server: {
     proxy: {
       '/api': {
