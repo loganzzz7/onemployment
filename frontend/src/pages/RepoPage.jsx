@@ -18,19 +18,19 @@ export default function RepoPage() {
 
   const { user: currentUser } = useContext(AuthContext)
 
-  const [repo, setRepo]       = useState(null)
+  const [repo, setRepo] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState(null)
+  const [error, setError] = useState(null)
 
   // inline‐edit state
-  const [isEditingAbout, setIsEditingAbout]   = useState(false)
-  const [formSummary, setFormSummary]         = useState('')
+  const [isEditingAbout, setIsEditingAbout] = useState(false)
+  const [formSummary, setFormSummary] = useState('')
   const [isEditingReadme, setIsEditingReadme] = useState(false)
-  const [formReadme, setFormReadme]           = useState('')
+  const [formReadme, setFormReadme] = useState('')
 
   // Add Commit
-  const [isAddOpen, setIsAddOpen]           = useState(false)
-  const [newSummary, setNewSummary]         = useState('')
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [newSummary, setNewSummary] = useState('')
   const [newDescription, setNewDescription] = useState('')
 
   useEffect(() => {
@@ -167,39 +167,62 @@ export default function RepoPage() {
           </span>
         </div>
 
-        {/* only the owner sees these */}
-        {isOwner && (
-          <div className="space-x-4">
-            <button
-              className="px-3 py-1 bg-gray-500 text-white font-semibold rounded duration-500 hover:bg-gray-300 hover:text-black"
-              onClick={() => setIsAddOpen(true)}
-            >
-              <i className="bi bi-plus-square" /> Add Commit
-            </button>
-            <button onClick={togglePin}>
-              {repo.isPinned ? (
-                <div className="px-3 py-1 bg-gray-300 text-black font-semibold rounded duration-500 hover:bg-gray-500">
-                  <i className="bi bi-pin-angle-fill" /> Unpin
-                </div>
-              ) : (
-                <div className="px-3 py-1 bg-gray-500 text-white font-semibold rounded duration-500 hover:bg-gray-300">
-                  <i className="bi bi-pin-angle" /> Pin
-                </div>
-              )}
-            </button>
+        <div className="space-x-4">
+          {isOwner && (
+            <>
+              <button
+                className="px-3 py-1 bg-gray-500 text-white font-semibold rounded duration-500 hover:bg-gray-300 hover:text-black"
+                onClick={() => setIsAddOpen(true)}
+              >
+                <i className="bi bi-plus-square" /> Add Commit
+              </button>
+              <button onClick={togglePin}>
+                {repo.isPinned ? (
+                  <div className="px-3 py-1 bg-gray-300 text-black font-semibold rounded duration-500 hover:bg-gray-500">
+                    <i className="bi bi-pin-angle-fill" /> Unpin
+                  </div>
+                ) : (
+                  <div className="px-3 py-1 bg-gray-500 text-white font-semibold rounded duration-500 hover:bg-gray-300">
+                    <i className="bi bi-pin-angle" /> Pin
+                  </div>
+                )}
+              </button>
+              <button onClick={toggleStar}>
+                {repo.isStarred ? (
+                  <div className="px-3 py-1 bg-yellow-400 text-black font-semibold rounded duration-500 hover:bg-gray-500">
+                    <i className="bi bi-star-fill" /> Unstar
+                  </div>
+                ) : (
+                  <div className="px-3 py-1 bg-gray-500 text-white font-semibold rounded duration-500 hover:bg-yellow-300">
+                    <i className="bi bi-star" /> Star
+                  </div>
+                )}
+              </button>
+            </>
+          )}
+
+          {!isOwner && isAuthenticated && (
             <button onClick={toggleStar}>
               {repo.isStarred ? (
                 <div className="px-3 py-1 bg-yellow-400 text-black font-semibold rounded duration-500 hover:bg-gray-500">
-                  <i className="bi bi-star-fill" /> Unstar
+                  <i className="bi bi-star-fill" /> {Array.isArray(repo.stars) ? repo.stars.length : 0}
                 </div>
               ) : (
                 <div className="px-3 py-1 bg-gray-500 text-white font-semibold rounded duration-500 hover:bg-yellow-300">
-                  <i className="bi bi-star" /> Star
+                  <i className="bi bi-star" /> {Array.isArray(repo.stars) ? repo.stars.length : 0}
                 </div>
               )}
             </button>
-          </div>
-        )}
+          )}
+
+          {!isOwner && !isAuthenticated && (
+            <Link to="/signin">
+              <div className="px-3 py-1 bg-gray-500 text-white font-semibold rounded duration-500 hover:bg-gray-300">
+                <i className="bi bi-star" /> {repo.stars}
+              </div>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* add commit Dialog */}
@@ -297,7 +320,7 @@ export default function RepoPage() {
                   <div className="flex flex-col gap-2 bg-gray-900 border-2 border-gray-700 rounded-lg p-4 hover:border-white duration-500">
                     <h3 className="font-semibold text-lg">{c.summary}</h3>
                     <p className="text-sm text-gray-400">{c.description}</p>
-                    <div className="mt-2 text-sm flex justify-between">
+                    <div className="mt-2 text-sm flex justify-between gap-2">
                       <span className="bg-blue-400 text-white px-2 py-1 rounded text-sm">
                         {repo.user.username} • {c.projectSeason}
                       </span>
@@ -305,7 +328,7 @@ export default function RepoPage() {
                     </div>
                   </div>
                 </Link>
-              ))}  
+              ))}
             </div>
           )}
           <div className="bg-gray-900 border-2 border-gray-700 rounded-lg p-6">

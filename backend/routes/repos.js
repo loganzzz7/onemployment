@@ -105,31 +105,59 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-// PATCH /api/repos/:id -> update (only owner)
+// PATCH /api/repos/:id -> update repo
 router.patch('/:id', authMiddle, async (req, res) => {
   try {
-    const repo = await Repo.findOne({ _id: req.params.id, user: req.userId })
+    const { toggleStar, togglePin, ...rest } = req.body
+    const userId = req.userId
+
+    // STAR (any authenticated user)
+    if (toggleStar) {
+      const repo = await Repo.findById(req.params.id)
+      if (!repo) return res.status(404).json({ error: 'Not found' })
+
+      if (!Array.isArray(repo.stars)) repo.stars = []
+
+      const idx = repo.stars.findIndex(id => id.equals(userId))
+      if (idx === -1) {
+        repo.stars.push(userId)
+        repo.isStarred = true
+      } else {
+        repo.stars.splice(idx, 1)
+        repo.isStarred = false
+      }
+
+      await repo.save()
+      const populated = await repo.populate('user', 'username avatarUrl')
+      const isStarred = repo.stars.some(id => id.equals(userId))
+
+      return res.json({
+        ...populated.toObject(),
+        stars: repo.stars,
+        isStarred,
+      })
+    }
+
+    // OWNER-ONLY updates (pin, name, summary, etc.)
+    const repo = await Repo.findOne({ _id: req.params.id, user: userId })
     if (!repo) return res.status(404).json({ error: 'Not found or not yours' })
 
-    if (req.body.togglePin) {
+    if (togglePin) {
       repo.isPinned = !repo.isPinned
     }
-    if (req.body.toggleStar) {
-      const willStar = !repo.isStarred
-      repo.isStarred = willStar
-      repo.stars = Math.max(0, repo.stars + (willStar ? 1 : -1))
-    }
 
+    // any other owner edits
     const allowed = ['name', 'summary', 'readme', 'isPublic', 'isPinned', 'isStarred']
     for (const key of allowed) {
-      if (req.body[key] !== undefined) {
-        repo[key] = req.body[key]
+      if (rest[key] !== undefined) {
+        repo[key] = rest[key]
       }
     }
 
     await repo.save()
     const populated = await repo.populate('user', 'username avatarUrl')
     res.json(populated)
+
   } catch (err) {
     console.error('Failed to patch repo:', err)
     res.status(500).json({ error: err.message })

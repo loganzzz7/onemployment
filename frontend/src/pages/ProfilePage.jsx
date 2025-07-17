@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { format, subDays } from 'date-fns'
 import RepoCard from '../components/RepoCard'
 import CalendarHeatmap from 'react-calendar-heatmap'
@@ -11,8 +11,10 @@ const ProfilePage = () => {
     const { user: currentUser, setUser: setAuthUser, logout } = useContext(AuthContext)
     const { username } = useParams()
     const navigate = useNavigate()
+    const location = useLocation()
     const token = localStorage.getItem('token')
     const isOwner = currentUser?.username === username
+    const isAuthenticated = !!currentUser
 
     const [user, setUser] = useState(null)
     const [repos, setRepos] = useState([])
@@ -28,51 +30,51 @@ const ProfilePage = () => {
     }, [currentUser, user, isOwner])
 
     async function handleFollow() {
-      const res = await fetch(`/api/users/${username}/follow`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!res.ok) return
+        const res = await fetch(`/api/users/${username}/follow`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) return
 
-      setUser(u => ({
-        ...u,
-        followers: Array.isArray(u.followers)
-          ? [...u.followers, currentUser._id]
-          : [(currentUser._id)]
-      }))
+        setUser(u => ({
+            ...u,
+            followers: Array.isArray(u.followers)
+                ? [...u.followers, currentUser._id]
+                : [(currentUser._id)]
+        }))
 
-      setAuthUser(cu => ({
-        ...cu,
-        following: Array.isArray(cu.following)
-          ? [...cu.following, user._id]
-          : [user._id]
-      }))
+        setAuthUser(cu => ({
+            ...cu,
+            following: Array.isArray(cu.following)
+                ? [...cu.following, user._id]
+                : [user._id]
+        }))
 
-      setIsFollowing(true)
+        setIsFollowing(true)
     }
 
     async function handleUnfollow() {
-      const res = await fetch(`/api/users/${username}/follow`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!res.ok) return
+        const res = await fetch(`/api/users/${username}/follow`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) return
 
-      setUser(u => ({
-        ...u,
-        followers: Array.isArray(u.followers)
-          ? u.followers.filter(id => id.toString() !== currentUser._id.toString())
-          : []
-      }))
+        setUser(u => ({
+            ...u,
+            followers: Array.isArray(u.followers)
+                ? u.followers.filter(id => id.toString() !== currentUser._id.toString())
+                : []
+        }))
 
-      setAuthUser(cu => ({
-        ...cu,
-        following: Array.isArray(cu.following)
-          ? cu.following.filter(id => id.toString() !== user._id.toString())
-          : []
-      }))
+        setAuthUser(cu => ({
+            ...cu,
+            following: Array.isArray(cu.following)
+                ? cu.following.filter(id => id.toString() !== user._id.toString())
+                : []
+        }))
 
-      setIsFollowing(false)
+        setIsFollowing(false)
     }
 
     const [isEditing, setIsEditing] = useState(false)
@@ -222,6 +224,7 @@ const ProfilePage = () => {
                         {/* Edit / Save / Cancel / Logout  OR  Follow/Unfollow */}
                         <div className="flex gap-4 w-11/12 sm:w-full">
                             {isOwner ? (
+                                // edit logout
                                 <>
                                     {isEditing ? (
                                         <>
@@ -254,20 +257,21 @@ const ProfilePage = () => {
                                     </button>
                                 </>
                             ) : (
-                                isFollowing ? (
+                                !isAuthenticated ? (
+                                    <button
+                                        onClick={() => navigate('/signin', { state: { from: location.pathname } })}
+                                        className="bg-blue-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                                    >Sign in to follow</button>
+                                ) : isFollowing ? (
                                     <button
                                         onClick={handleUnfollow}
                                         className="bg-red-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-red-700"
-                                    >
-                                        Unfollow
-                                    </button>
+                                    >Unfollow</button>
                                 ) : (
                                     <button
                                         onClick={handleFollow}
                                         className="bg-blue-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
-                                    >
-                                        Follow
-                                    </button>
+                                    >Follow</button>
                                 )
                             )}
                         </div>

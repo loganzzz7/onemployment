@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useContext } from 'react'
 import RepoCard from '../components/RepoCard'
 import { format } from 'date-fns'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
 import defaultAvatar from '../assets/logo.png'
 import { AuthContext } from '../contexts/AuthContext'
 
 export default function ProfileRepoPage() {
   const { user: currentUser, setUser: setAuthUser, logout } = useContext(AuthContext)
   const navigate = useNavigate()
+  const location = useLocation()
   const { username } = useParams()
   const token = localStorage.getItem('token')
   const isOwner = currentUser?.username === username
+  const isAuthenticated = !!currentUser
 
   // profile + repos
   const [user, setUser] = useState(null)
@@ -268,7 +270,12 @@ export default function ProfileRepoPage() {
                   </button>
                 </>
               ) : (
-                isFollowing ? (
+                !isAuthenticated ? (
+                  <button
+                    onClick={() => navigate('/signin', { state: { from: location.pathname } })}
+                    className="bg-blue-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-blue-700"
+                  >Sign in to follow</button>
+                ) : isFollowing ? (
                   <button
                     onClick={handleUnfollow}
                     className="bg-red-900 w-full text-white font-bold px-4 py-2 rounded duration-500 hover:bg-red-700"

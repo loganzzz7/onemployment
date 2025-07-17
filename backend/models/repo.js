@@ -27,7 +27,7 @@ const RepoSchema = new Schema({
   isPublic: { type: Boolean, default: true },
   isStarred: { type: Boolean, default: false },
   isPinned: { type: Boolean, default: false },
-  stars: { type: Number, default: 0 },
+  stars: [{ type: Types.ObjectId, ref: 'User' }],
   createdAt: { type: Date, default: Date.now },
 
   commits: { type: [CommitSchema], default: [] }
