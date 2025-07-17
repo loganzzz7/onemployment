@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react'
 import RepoCard from '../components/RepoCard'
 import { Link } from 'react-router-dom'
 import SplitText from '../components/SplitText'
+const API = import.meta.env.VITE_API_BASE;
+
+
 
 export default function ConnectPage() {
   const [repos, setRepos] = useState([])
@@ -26,7 +29,7 @@ export default function ConnectPage() {
           ? { Authorization: `Bearer ${token}` }
           : {}
 
-        const res = await fetch('/api/repos/all', { headers })
+        const res = await fetch(`/${API}/repos/all`, { headers })
         if (!res.ok) throw new Error('Failed to load repositories')
         const data = await res.json()
         setRepos(data)

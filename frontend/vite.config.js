@@ -7,12 +7,12 @@ export default defineConfig({
     react(),
     tsconfigPaths(),
   ],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3030',
-        changeOrigin: true,
-      }
-    }
-  }
+  // server: {
+  //   proxy: {
+  //     '/api': {
+  //       target: 'http://localhost:3030',
+  //       changeOrigin: true,
+  //     }
+  //   }
+  // }
 })

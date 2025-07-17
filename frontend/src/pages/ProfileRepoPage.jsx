@@ -48,7 +48,7 @@ export default function ProfileRepoPage() {
 
   // follow API
   async function handleFollow() {
-    const res = await fetch(`/api/users/${username}/follow`, {
+    const res = await fetch(`/${API}/users/${username}/follow`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -73,7 +73,7 @@ export default function ProfileRepoPage() {
 
   // unfollow API
   async function handleUnfollow() {
-    const res = await fetch(`/api/users/${username}/follow`, {
+    const res = await fetch(`/${API}/users/${username}/follow`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -105,7 +105,7 @@ export default function ProfileRepoPage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const res = await fetch(`/api/repos/user/${username}`)
+        const res = await fetch(`/${API}/repos/user/${username}`)
         if (!res.ok) throw new Error('Profile not found')
         const { user: u } = await res.json()
         setUser(u)
@@ -130,7 +130,7 @@ export default function ProfileRepoPage() {
   useEffect(() => {
     async function fetchRepos() {
       try {
-        const res = await fetch(`/api/repos/all?user=${username}`)
+        const res = await fetch(`/${API}/repos/all?user=${username}`)
         if (!res.ok) throw new Error('Failed to load repos')
         setRepos(await res.json())
       } catch {
@@ -153,7 +153,7 @@ export default function ProfileRepoPage() {
   // save edits
   async function handleSave() {
     try {
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch(`/${API}/auth/me`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

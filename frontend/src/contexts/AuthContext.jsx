@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react'
+const API = import.meta.env.VITE_API_BASE;
 
 
 
@@ -22,7 +23,7 @@ export function AuthProvider({ children }) {
             return
         }
         try {
-            const res = await fetch('/api/auth/me', {
+            const res = await fetch(`/${API}/auth/me`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             if (!res.ok) throw new Error()

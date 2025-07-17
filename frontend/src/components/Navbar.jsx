@@ -16,6 +16,9 @@ import {
 import clsx from "clsx"
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/20/solid'
 import { AuthContext } from '../contexts/AuthContext'
+const API = import.meta.env.VITE_API_BASE;
+
+
 
 const Navbar = () => {
   const { user: currentUser, loading } = useContext(AuthContext)
@@ -46,6 +49,7 @@ const Navbar = () => {
           .includes(seasonQuery.trim().toLowerCase())
       )
 
+
   async function handleAddRepo() {
     const token = localStorage.getItem('token')
     if (!token) return alert('Please log in first')
@@ -58,7 +62,7 @@ const Navbar = () => {
     }
 
     try {
-      const res = await fetch('/api/repos', {
+      const res = await fetch(`/${API}/repos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
