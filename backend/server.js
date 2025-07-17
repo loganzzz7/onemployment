@@ -1,24 +1,29 @@
-import express from "express";
-import dotenv from "dotenv";
-import { connectDB } from "./config/db.js";
+import express from 'express'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import { connectDB } from './config/db.js'
 import authRoutes from './routes/auth.js'
 import repoRoutes from './routes/repos.js'
 import usersRouter from './routes/users.js'
 
+dotenv.config()
+await connectDB()
 
+const app = express()
 
-dotenv.config();
-await connectDB();
+app.use(cors({
+  origin: [
+    'https://onemployment.vercel.app',
+    'http://localhost:5173'
+  ]
+}))
 
-const app = express();
-app.use(express.json());
+app.use(express.json())
 app.use('/api/auth', authRoutes)
 app.use('/api/repos', repoRoutes)
 app.use('/api/users', usersRouter)
 
-app.get("/", (req, res) => {
-    res.send("server is ready")
-});
+app.get('/', (req, res) => res.send('server is ready'))
 
 const PORT = process.env.PORT || 3030
 app.listen(PORT, () => {
