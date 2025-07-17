@@ -40,7 +40,7 @@ export default function RepoPage() {
     async function load() {
       try {
         const headers = token ? { Authorization: `Bearer ${token}` } : {}
-        const res = await fetch(`/${API}/repos/${repoid}`, { headers })
+        const res = await fetch(`${API}/repos/${repoid}`, { headers })
         if (!res.ok) throw new Error('Failed to load repo')
         const data = await res.json()
         setRepo(data)
@@ -75,7 +75,7 @@ export default function RepoPage() {
 
   // PATCH “About”
   async function saveAbout() {
-    await fetch(`/${API}/repos/${repoid}`, {
+    await fetch(`${API}/repos/${repoid}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ export default function RepoPage() {
 
   // PATCH “Readme”
   async function saveReadme() {
-    await fetch(`/${API}/repos/${repoid}`, {
+    await fetch(`${API}/repos/${repoid}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ export default function RepoPage() {
 
   // POST Commit
   async function handleAddCommit() {
-    await fetch(`/${API}/repos/${repoid}/commits`, {
+    await fetch(`${API}/repos/${repoid}/commits`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ export default function RepoPage() {
     setIsAddOpen(false)
     setNewSummary('')
     setNewDescription('')
-    const fresh = await fetch(`/${API}/repos/${repoid}`, {
+    const fresh = await fetch(`${API}/repos/${repoid}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     }).then(r => r.json())
     setRepo(fresh)
@@ -122,7 +122,7 @@ export default function RepoPage() {
 
   // toggle pin/star
   async function togglePin() {
-    const res = await fetch(`/${API}/repos/${repoid}`, {
+    const res = await fetch(`${API}/repos/${repoid}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ export default function RepoPage() {
     setRepo(prev => ({ ...prev, ...updated, user: prev.user }))
   }
   async function toggleStar() {
-    const res = await fetch(`/${API}/repos/${repoid}`, {
+    const res = await fetch(`${API}/repos/${repoid}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

@@ -31,7 +31,7 @@ const CommitPage = () => {
     async function load() {
       try {
         const headers = token ? { Authorization: `Bearer ${token}` } : {}
-        const res = await fetch(`/${API}/repos/${repoid}`, { headers })
+        const res = await fetch(`${API}/repos/${repoid}`, { headers })
         if (!res.ok) throw new Error('Failed to load repo')
         const data = await res.json()
         setRepo(data)
@@ -59,7 +59,7 @@ const CommitPage = () => {
 
   // only the owner can save description
   async function saveDesc() {
-    const res = await fetch(`/${API}/repos/${repoid}/commits/${commitid}`, {
+    const res = await fetch(`${API}/repos/${repoid}/commits/${commitid}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ const CommitPage = () => {
   async function submitComment() {
     try {
       const res = await fetch(
-        `/${API}/repos/${repoid}/commits/${commitid}/comments`,
+        `${API}/repos/${repoid}/commits/${commitid}/comments`,
         {
           method: 'POST',
           headers: {
@@ -90,7 +90,7 @@ const CommitPage = () => {
       )
       if (!res.ok) throw new Error('Failed to post comment')
       // reload to refresh comment
-      const freshRes = await fetch(`/${API}/repos/${repoid}`, {
+      const freshRes = await fetch(`${API}/repos/${repoid}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       })
       const fresh = await freshRes.json()

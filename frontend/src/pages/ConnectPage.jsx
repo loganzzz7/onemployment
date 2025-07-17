@@ -29,7 +29,7 @@ export default function ConnectPage() {
           ? { Authorization: `Bearer ${token}` }
           : {}
 
-        const res = await fetch(`/${API}/repos/all`, { headers })
+        const res = await fetch(`${API}/repos/all`, { headers })
         if (!res.ok) throw new Error('Failed to load repositories')
         const data = await res.json()
         setRepos(data)

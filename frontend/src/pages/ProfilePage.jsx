@@ -34,7 +34,7 @@ const ProfilePage = () => {
     }, [currentUser, user, isOwner])
 
     async function handleFollow() {
-        const res = await fetch(`/${API}/users/${username}/follow`, {
+        const res = await fetch(`${API}/users/${username}/follow`, {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
         })
@@ -58,7 +58,7 @@ const ProfilePage = () => {
     }
 
     async function handleUnfollow() {
-        const res = await fetch(`/${API}/users/${username}/follow`, {
+        const res = await fetch(`${API}/users/${username}/follow`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
         })
@@ -103,7 +103,7 @@ const ProfilePage = () => {
     useEffect(() => {
         async function fetchProfile() {
             try {
-                const res = await fetch(`/${API}/repos/user/${username}`)
+                const res = await fetch(`${API}/repos/user/${username}`)
                 if (!res.ok) throw new Error('Profile not found')
                 const { user: u } = await res.json()
                 setUser(u)
@@ -129,7 +129,7 @@ const ProfilePage = () => {
     useEffect(() => {
         async function fetchRepos() {
             try {
-                const res = await fetch(`/${API}/repos/all?user=${username}`)
+                const res = await fetch(`${API}/repos/all?user=${username}`)
                 if (!res.ok) throw new Error('Failed to load repos')
                 const data = await res.json()
                 setRepos(data)
@@ -163,7 +163,7 @@ const ProfilePage = () => {
     // only runs if it’s _your_ profile
     async function handleSave() {
         try {
-            const res = await fetch('/${API}/auth/me', {
+            const res = await fetch('${API}/auth/me', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

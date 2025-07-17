@@ -62,7 +62,7 @@ const Navbar = () => {
     }
 
     try {
-      const res = await fetch(`/${API}/repos`, {
+      const res = await fetch(`${API}/repos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
