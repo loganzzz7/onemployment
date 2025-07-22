@@ -15,6 +15,7 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
 
+    // fix for render's freetier sleep after 15 mins
     const fetchMe = useCallback(async () => {
         const token = localStorage.getItem('token')
         if (!token) {
@@ -26,12 +27,17 @@ export function AuthProvider({ children }) {
             const res = await fetch(`${API}/auth/me`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
-            if (!res.ok) throw new Error()
-            const { user } = await res.json()
-            setUser(user)
-        } catch {
-            setUser(null)
-            localStorage.removeItem('token')
+            if (res.status === 401) {
+                localStorage.removeItem('token')
+                setUser(null)
+            } else if (res.ok) {
+                const { user } = await res.json()
+                setUser(user)
+            }
+            // if it’s a 5smt or network error, just leave the token and user alone
+        } catch (err) {
+            console.error('Network/server error in fetchMe', err)
+            // don’t log the user out on sleep
         } finally {
             setLoading(false)
         }
