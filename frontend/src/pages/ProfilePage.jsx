@@ -163,7 +163,7 @@ const ProfilePage = () => {
     // only runs if it’s _your_ profile
     async function handleSave() {
         try {
-            const res = await fetch('${API}/auth/me', {
+            const res = await fetch(`${API}/auth/me`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
