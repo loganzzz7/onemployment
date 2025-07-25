@@ -23,6 +23,19 @@ const ProfilePage = () => {
     const [repos, setRepos] = useState([])
     const [isFollowing, setIsFollowing] = useState(false)
 
+    useEffect(() => {
+        // only run once currentUser is loaded, you own this page, and they have an avatarUrl
+        if (!isOwner || !currentUser?.avatarUrl || !user) return
+
+        // only patch into our `user` state if it's out-of-sync
+        if (user?.avatarUrl !== currentUser.avatarUrl) {
+            setUser(u => ({ ...u, avatarUrl: currentUser.avatarUrl }))
+        }
+    }, [
+        isOwner,
+        currentUser?.avatarUrl,
+        user?.avatarUrl
+    ])
 
     useEffect(() => {
         if (!isOwner && currentUser && user) {
@@ -191,12 +204,23 @@ const ProfilePage = () => {
             <section className="py-8 text-white">
                 <div className="px-24 grid grid-cols-1 md:grid-cols-3 gap-16">
                     {/* left */}
-                    <div className="space-y-4">
-                        <img
-                            src={user.avatarUrl || defaultAvatar}
-                            alt={`${user.name} avatar`}
-                            className="mx-auto lg:mx-0 h-48 w-48 rounded-full border-2 border-gray-800"
-                        />
+                    <div className="flex flex-col gap-4">
+                        <Link to={`/settings/${username}/publicprofile`}>
+                            <img
+                                src={
+                                    isOwner
+                                        ? (currentUser.avatarUrl?.startsWith('http')
+                                            ? currentUser.avatarUrl
+                                            : `${API}${currentUser.avatarUrl}`)
+                                        : (user.avatarUrl?.startsWith('http')
+                                            ? user.avatarUrl
+                                            : `${API}${user.avatarUrl}`)
+                                        || defaultAvatar
+                                }
+                                alt={`${user.name} avatar`}
+                                className="cursor-pointer mx-auto lg:mx-0 h-48 w-48 rounded-full border-2 border-gray-800 duration-500 hover:border-white"
+                            />
+                        </Link>
 
                         <h1 className="text-2xl font-bold">
                             {isOwner && isEditing ? (
@@ -222,7 +246,7 @@ const ProfilePage = () => {
                                 className="w-full mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-gray-400 focus:outline-none"
                             />
                         ) : (
-                            <p className="mt-4 text-gray-400">{user.bio}</p>
+                            <p className="text-gray-400">{user.bio}</p>
                         )}
 
                         {/* Edit / Save / Cancel / Logout  OR  Follow/Unfollow */}

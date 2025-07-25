@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef, useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { AuthContext } from '../contexts/AuthContext'
-import connect from '../assets/connect_plcmt.png'
-import commit from '../assets/commit_plcmt.png'
+import connect from '../assets/onEmployment_connect.png'
+import commit from '../assets/onEmployment_repo.png'
 import BlurText from "../components/BlurText";
 import SplitText from "../components/SplitText";
 import DecryptedText from '../components/DecryptedText';
@@ -105,7 +105,7 @@ const LandingPage = () => {
         <div className="bg-black">
           <div
             ref={placeholderOneRef}
-            className="w-11/12 mx-auto border-b border-gray-600"
+            className="w-11/12 mx-auto border-b-2 border-gray-600"
           ></div>
         </div>
 
@@ -127,17 +127,12 @@ const LandingPage = () => {
               <div className="mx-auto">
                 <div
                   className="
-                    max-w-5xl max-h-6xl
+                    max-w-6xl max-h-6xl
                     rounded-sm flex items-center justify-center
-                    overflow-hidden border-2 border-gray-600
-                    py-8
+                    overflow-hidden border-4 border-blue-700
                   "
                 >
-                  <img
-                    src={connect}
-                    alt="Profile demo"
-                    className="w-full h-full"
-                  />
+                  <img src={connect} alt="Profile demo" className="w-full h-full" />
                 </div>
               </div>
             </div>
@@ -147,7 +142,7 @@ const LandingPage = () => {
         <div className="bg-black">
           <div
             ref={placeholderTwoRef}
-            className="w-11/12 mx-auto border-b border-gray-600"
+            className="w-11/12 mx-auto border-b-2 border-gray-600"
           ></div>
         </div>
 
@@ -178,10 +173,9 @@ const LandingPage = () => {
               <div className="mx-auto py-16">
                 <div
                   className="
-                    max-w-5xl max-h-6xl
+                    max-w-6xl max-h-6xl
                     rounded-sm flex items-center justify-center
-                    overflow-hidden border-2 border-gray-600
-                    py-8
+                    overflow-hidden border-4 border-blue-700
                   "
                 >
                   <img src={commit} alt="Commit demo" className="w-full h-full" />
@@ -192,7 +186,7 @@ const LandingPage = () => {
         </section>
 
         <div className="bg-black">
-          <div className="w-11/12 mx-auto border-b border-gray-600"></div>
+          <div className="w-11/12 mx-auto border-b-2 border-gray-600"></div>
         </div>
 
         <section className="font-mono bg-black px-4 py-32">

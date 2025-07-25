@@ -203,12 +203,15 @@ export default function ProfileRepoPage() {
         <div className="px-24 grid grid-cols-1 md:grid-cols-3 gap-16">
 
           {/* left */}
-          <div className="space-y-4">
-            <img
-              src={user.avatarUrl || defaultAvatar}
-              alt={`${user.name} avatar`}
-              className="mx-auto lg:mx-0 h-48 w-48 rounded-full border-2 border-gray-800"
-            />
+          <div className="flex flex-col gap-4">
+            <Link to={`/settings/${username}/publicprofile`}>
+              <img
+                src={user.avatarUrl || defaultAvatar}
+                alt={`${user.name} avatar`}
+                className="cursor-pointer mx-auto lg:mx-0 h-48 w-48 rounded-full border-2 border-gray-800
+                                duration-500 hover:border-white"
+              />
+            </Link>
 
             <h1 className="text-2xl font-bold">
               {isOwner && isEditing ? (
@@ -239,7 +242,7 @@ export default function ProfileRepoPage() {
                 className="w-full mx-auto lg:mx-0 bg-transparent border border-gray-800 rounded px-2 py-1 text-gray-400 focus:outline-none"
               />
             ) : (
-              <p className="mt-4 text-gray-400">{user.bio}</p>
+              <p className="text-gray-400">{user.bio}</p>
             )}
 
             {/* Edit/Save/Cancel/Logout OR Follow/Unfollow */}

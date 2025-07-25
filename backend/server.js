@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import path from 'path'
 import dotenv from 'dotenv'
 import { connectDB } from './config/db.js'
 import authRoutes from './routes/auth.js'
@@ -22,6 +23,7 @@ app.use(express.json())
 app.use('/api/auth', authRoutes)
 app.use('/api/repos', repoRoutes)
 app.use('/api/users', usersRouter)
+app.use("/api/pfpuploads", express.static(path.join(process.cwd(), "pfpuploads")));
 
 app.get('/', (req, res) => res.send('server is ready'))
 

@@ -2,8 +2,15 @@ import express from 'express'
 import jwt from 'jsonwebtoken'
 import User from '../models/user.js'
 import { authMiddle } from '../middle/status.js'
+import multer from "multer";
+import path from "path";
 
 const router = express.Router()
+
+const upload = multer({
+  dest: path.join(process.cwd(), "pfpuploads/"),
+  limits: { fileSize: 5 * 1024 * 1024 } // e.g. 5MB max
+});
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
@@ -115,5 +122,30 @@ router.patch('/password', authMiddle, async (req, res) => {
     return res.status(500).json({ error: err.message })
   }
 })
+
+// POST /api/auth/me/avatar
+router.post(
+  "/me/avatar",
+  authMiddle,
+  upload.single("avatar"),
+  async (req, res) => {
+    try {
+      // find the user
+      const u = await User.findById(req.userId);
+      if (!u) return res.status(404).json({ error: "User not found" });
+
+      // multer has put the file at uploads/<random-filename>
+      // construct the public URL
+      u.avatarUrl = `/pfpuploads/${req.file.filename}`;
+      await u.save();
+
+      // return the up-to-date user object
+      res.json({ user: u });
+    } catch (err) {
+      console.error("Avatar upload failed:", err);
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
 
 export default router

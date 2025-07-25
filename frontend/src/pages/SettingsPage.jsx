@@ -1,9 +1,25 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { format } from 'date-fns'
 import defaultAvatar from '../assets/logo.png'
 import { AuthContext } from '../contexts/AuthContext'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
+
+
 const API = import.meta.env.VITE_API_BASE
+
+function useMediaQuery(query) {
+    const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
+
+    useEffect(() => {
+        const mql = window.matchMedia(query)
+        const handler = e => setMatches(e.matches)
+        mql.addEventListener('change', handler)
+        return () => mql.removeEventListener('change', handler)
+    }, [query])
+
+    return matches
+}
 
 const SettingsPage = () => {
     const { user: currentUser, setUser: setAuthUser, logout } = useContext(AuthContext)
@@ -14,6 +30,8 @@ const SettingsPage = () => {
 
     const isOwner = currentUser?.username === username
     const isAuthenticated = Boolean(currentUser)
+
+    const isMobile = useMediaQuery('(max-width: 640px)')
 
     const [user, setUser] = useState(null)
     const [isEditing, setIsEditing] = useState(false)
@@ -44,6 +62,33 @@ const SettingsPage = () => {
     const [newPassword, setNewPassword] = useState('')
     const [confirmNewPassword, setConfirmNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
+
+    //pp tab pfp update
+    const fileInputRef = useRef(null)
+    async function handleAvatarChange(e) {
+        const file = e.target.files?.[0]
+        if (!file) return
+        const body = new FormData()
+        body.append('avatar', file)
+        try {
+            const res = await fetch(`${API}/auth/me/avatar`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body,
+            })
+            if (!res.ok) throw new Error('Upload failed')
+            const { user: updated } = await res.json()
+            // sync both local and context
+            setUser(updated)
+            setAuthUser(cu => ({ ...cu, avatarUrl: updated.avatarUrl }))
+        } catch (err) {
+            console.error(err)
+            alert(err.message)
+        }
+    }
+
 
     // error & succ text disappear after 5sec:
     // clear error after 5s
@@ -217,6 +262,13 @@ const SettingsPage = () => {
         }
     }
 
+    const avatarSrc = user.avatarUrl
+        ?
+        user.avatarUrl.startsWith('http')
+            ? user.avatarUrl
+            : `${API}${user.avatarUrl}`
+        : defaultAvatar
+
     return (
         <main className="font-mono bg-black min-h-screen text-white">
             <div className="px-24 py-8 grid grid-cols-1 md:grid-cols-3 gap-16">
@@ -240,17 +292,51 @@ const SettingsPage = () => {
                 </aside>
 
                 {/* right side */}
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                />
+
                 <section className="md:col-span-2">
 
                     {activeTab === 'publicprofile' && (
                         <div className="space-y-4">
 
                             {/* avatar */}
-                            <img
-                                src={user.avatarUrl || defaultAvatar}
-                                alt={`${user.name} avatar`}
-                                className="mx-auto lg:mx-0 h-48 w-48 rounded-full border-2 border-gray-800"
-                            />
+                            <Menu>
+                                <MenuButton className="group items-center rounded-full focus:outline-none">
+                                    <img
+                                        src={avatarSrc}
+                                        alt={`${user.name} avatar`}
+                                        className="h-48 w-48 rounded-full border-2 border-gray-800 duration-500 group-hover:border-white"
+                                    />
+                                </MenuButton>
+
+                                <MenuItems
+                                    transition
+                                    anchor={isMobile ? 'bottom start' : 'right mid'}
+                                    className="ml-2 w-35 rounded-xl border-2 border-gray-800 bg-gray-900 p-1 text-sm/6 text-white transition duration-300 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0"
+                                >
+                                    <MenuItem>
+                                        <button
+                                            onClick={() => fileInputRef.current.click()}
+                                            className="group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 duration-500 data-focus:bg-white/10">
+                                            Edit
+                                            <kbd className="ml-auto hidden text-xs text-white/50 group-data-focus:inline">⌘E</kbd>
+                                        </button>
+                                    </MenuItem>
+                                    <div className="my-1 h-px bg-gray-800" />
+                                    <MenuItem>
+                                        <button className="group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 duration-500 data-focus:bg-white/10">
+                                            Delete
+                                            <kbd className="ml-auto hidden text-xs text-white/50 group-data-focus:inline">⌘D</kbd>
+                                        </button>
+                                    </MenuItem>
+                                </MenuItems>
+                            </Menu>
 
                             {/* name */}
                             <h1 className="text-2xl font-bold">

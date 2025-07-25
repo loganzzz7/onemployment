@@ -245,11 +245,13 @@ const Navbar = () => {
               </div>
             </Dialog>
             {/* Popover around the avatar & username */}
+            <Link to={`/profile/${currentUser.username}`} className="self-center">
+              <p className="text-white hover:underline font-semibold">
+                {currentUser.username}
+              </p>
+            </Link>
             <Popover className="relative">
               <PopoverButton className="flex gap-4 items-center focus:outline-none">
-                <p className="text-white hover:underline font-semibold">
-                  {currentUser.username}
-                </p>
                 <img
                   src={currentUser.avatarUrl || logo}
                   alt={`${currentUser.username} avatar`}
@@ -263,23 +265,25 @@ const Navbar = () => {
                 <ul className="flex flex-col p-2 space-y-1">
                   {/* profile link */}
                   <li>
-                    <Link
+                    <PopoverButton
+                      as={Link}
                       to={`/profile/${currentUser.username}`}
                       className="flex gap-2 items-center px-3 py-2 text-white duration-500 hover:bg-gray-700 rounded"
                     >
                       <i className="bi bi-person-circle" />
                       <span>My Profile</span>
-                    </Link>
+                    </PopoverButton>
                   </li>
                   {/* settings link */}
                   <li>
-                    <Link
+                    <PopoverButton
+                      as={Link}
                       to={`/settings/${currentUser.username}/publicprofile`}
                       className="flex gap-2 items-center px-3 py-2 text-white duration-500 hover:bg-gray-700 rounded"
                     >
                       <i className="bi bi-gear-fill" />
                       <span>Settings</span>
-                    </Link>
+                    </PopoverButton>
                   </li>
                 </ul>
               </PopoverPanel>
