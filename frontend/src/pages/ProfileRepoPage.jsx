@@ -345,7 +345,7 @@ export default function ProfileRepoPage() {
 
               {isOwner && isEditing ? (
                 <li>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     🔗{' '}
                     <input
                       type="text"
@@ -357,15 +357,17 @@ export default function ProfileRepoPage() {
                 </li>
               ) : user.website ? (
                 <li>
-                  🔗{' '}
-                  <a
-                    href={user.website}
-                    className="text-blue-700 hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {user.website}
-                  </a>
+                  <div className="flex flex-wrap gap-2">
+                    🔗{' '}
+                    <a
+                      href={user.website}
+                      className="text-blue-700 hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {user.website}
+                    </a>
+                  </div>
                 </li>
               ) : null}
             </ul>
