@@ -10,7 +10,7 @@ import ProfilePage from './pages/ProfilePage'
 import RepoPage from "./pages/RepoPage"
 import CommitPage from './pages/CommitPage'
 import ProfileRepoPage from "./pages/ProfileRepoPage"
-
+import SettingsPage from "./pages/SettingsPage"
 
 
 function App() {
@@ -27,6 +27,8 @@ function App() {
         <Route path="/profile/:username/repos" element={<ProfileRepoPage />} />
         <Route path="/profile/:username/repos/:repoid" element={<RepoPage />} />
         <Route path="/profile/:username/repos/:repoid/commits/:commitid" element={<CommitPage />} />
+        <Route path="/settings/:username/:tab" element={<SettingsPage />} />
+
 
 
       </Routes>

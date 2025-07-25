@@ -11,7 +11,10 @@ import {
   ComboboxButton,
   ComboboxInput,
   ComboboxOption,
-  ComboboxOptions
+  ComboboxOptions,
+  Popover,
+  PopoverButton,
+  PopoverPanel
 } from '@headlessui/react'
 import clsx from "clsx"
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/20/solid'
@@ -241,14 +244,46 @@ const Navbar = () => {
                 </DialogPanel>
               </div>
             </Dialog>
-            <Link to={`/profile/${currentUser.username}`} className="flex gap-4 items-center font-semibold">
-              <p className="text-white hover:underline">{currentUser.username}</p>
-              <img
-                src={currentUser.avatarUrl || logo}
-                alt={`${currentUser.username} avatar`}
-                className="h-12 w-12 rounded-full border-2 border-gray-600 cursor-pointer duration-500 hover:border-white"
-              />
-            </Link>
+            {/* Popover around the avatar & username */}
+            <Popover className="relative">
+              <PopoverButton className="flex gap-4 items-center focus:outline-none">
+                <p className="text-white hover:underline font-semibold">
+                  {currentUser.username}
+                </p>
+                <img
+                  src={currentUser.avatarUrl || logo}
+                  alt={`${currentUser.username} avatar`}
+                  className="h-12 w-12 rounded-full border-2 border-gray-600 cursor-pointer duration-500 hover:border-white"
+                />
+              </PopoverButton>
+
+              <PopoverPanel transition
+                className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded z-10
+                transition duration-300 ease-in-out [--anchor-gap:--spacing(5)] data-closed:-translate-y-1 data-closed:opacity-0">
+                <ul className="flex flex-col p-2 space-y-1">
+                  {/* profile link */}
+                  <li>
+                    <Link
+                      to={`/profile/${currentUser.username}`}
+                      className="flex gap-2 items-center px-3 py-2 text-white duration-500 hover:bg-gray-700 rounded"
+                    >
+                      <i className="bi bi-person-circle" />
+                      <span>My Profile</span>
+                    </Link>
+                  </li>
+                  {/* settings link */}
+                  <li>
+                    <Link
+                      to={`/settings/${currentUser.username}/publicprofile`}
+                      className="flex gap-2 items-center px-3 py-2 text-white duration-500 hover:bg-gray-700 rounded"
+                    >
+                      <i className="bi bi-gear-fill" />
+                      <span>Settings</span>
+                    </Link>
+                  </li>
+                </ul>
+              </PopoverPanel>
+            </Popover>
           </div>
         ) : (
           <Link

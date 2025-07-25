@@ -44,13 +44,27 @@ router.patch('/me', authMiddle, async (req, res) => {
     const u = await User.findById(req.userId)
     if (!u) return res.status(404).json({ error: 'Not found' })
 
-    const { name, bio, company, location, website, twitter, linkedin, github } = req.body
+    // email change
+    const { email, password, name, bio, company, location, website, twitter, linkedin, github } = req.body
 
-    if (name    !== undefined) u.name     = name
-    if (bio     !== undefined) u.bio      = bio
-    if (company !== undefined) u.company  = company
-    if (location!== undefined) u.location = location
-    if (website !== undefined) u.website  = website
+    if (email !== undefined) {
+      // require password confirmation
+      if (!password) {
+        return res.status(400).json({ error: 'Password is required to change email' })
+      }
+      // validate password
+      const ok = await u.validatePassword(password)
+      if (!ok) {
+        return res.status(401).json({ error: 'Incorrect password' })
+      }
+      u.email = email
+    }
+
+    if (name     !== undefined) u.name     = name
+    if (bio      !== undefined) u.bio      = bio
+    if (company  !== undefined) u.company  = company
+    if (location !== undefined) u.location = location
+    if (website  !== undefined) u.website  = website
 
     u.socials = u.socials || {}
     if (twitter  !== undefined) u.socials.twitter  = twitter
@@ -59,12 +73,12 @@ router.patch('/me', authMiddle, async (req, res) => {
 
     await u.save()
 
+    // return the up-to-date user
     res.json({ user: u })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: err.message })
   }
 })
-
 
 export default router
