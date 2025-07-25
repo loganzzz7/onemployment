@@ -361,7 +361,7 @@ export default function ProfileRepoPage() {
                     🔗{' '}
                     <a
                       href={user.website}
-                      className="text-blue-700 hover:underline flex flex-wrap"
+                      className="text-blue-700 hover:underline flex flex-wrap break-all"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
