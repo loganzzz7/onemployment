@@ -81,4 +81,39 @@ router.patch('/me', authMiddle, async (req, res) => {
   }
 })
 
+// PATCH /api/auth/password
+router.patch('/password', authMiddle, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body
+
+    // make sure user sent both
+    if (!currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ error: 'Both current and new passwords are required' })
+    }
+
+    // load user
+    const user = await User.findById(req.userId)
+    if (!user) return res.status(404).json({ error: 'User not found' })
+
+    // verify current password
+    const valid = await user.validatePassword(currentPassword)
+    if (!valid) {
+      return res
+        .status(401)
+        .json({ error: 'Current password is incorrect' })
+    }
+
+    // hash n save new
+    await user.setPassword(newPassword)
+    await user.save()
+
+    return res.json({ message: 'Password updated successfully' })
+  } catch (err) {
+    console.error('Password change failed:', err)
+    return res.status(500).json({ error: err.message })
+  }
+})
+
 export default router

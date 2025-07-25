@@ -40,6 +40,61 @@ const SettingsPage = () => {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
 
+    // pwd-tab state
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmNewPassword, setConfirmNewPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+
+    // error & succ text disappear after 5sec:
+    // clear error after 5s
+    useEffect(() => {
+        if (!error) return
+        const t = setTimeout(() => setError(''), 1000)
+        return () => clearTimeout(t)
+    }, [error])
+
+    // clear succ after 5s
+    useEffect(() => {
+        if (!success) return
+        const t = setTimeout(() => setSuccess(''), 1000)
+        return () => clearTimeout(t)
+    }, [success])
+
+    // update pwd
+    async function handlePasswordSubmit(e) {
+        e.preventDefault()
+        setError('')
+        setSuccess('')
+
+        if (newPassword !== confirmNewPassword) {
+            setError("New passwords don't match")
+            return
+        }
+
+        try {
+            const res = await fetch(`${API}/auth/password`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    currentPassword: confirmPassword,
+                    newPassword,
+                }),
+            })
+            const data = await res.json()
+            if (!res.ok) throw new Error(data.error || 'Password change failed')
+
+            setSuccess('Password changed successfully')
+            setNewPassword('')
+            setConfirmNewPassword('')
+            setConfirmPassword('')
+        } catch (err) {
+            setError(err.message)
+        }
+    }
+
     // fetch the user's profile on mount
     useEffect(() => {
         if (!isAuthenticated) {
@@ -408,10 +463,51 @@ const SettingsPage = () => {
                     )}
 
                     {activeTab === 'password' && (
-                        <div>
-                            {/* TODO: password change form */}
-                            <p className="text-gray-400">Password change coming soon…</p>
-                        </div>
+                        <section className="bg-gray-800 border-2 border-gray-600 rounded p-8 flex flex-col max-w-lg mx-auto">
+                            <h2 className="text-xl font-bold mb-4">Change Password</h2>
+                            {error && <p className="text-red-400 mb-4">{error}</p>}
+                            {success && <p className="text-green-400 mb-4">{success}</p>}
+                            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                                <div className="flex flex-col gap-2">
+                                    <label className="font-semibold">New Password:</label>
+                                    <input
+                                        type="password"
+                                        value={newPassword}
+                                        onChange={e => setNewPassword(e.target.value)}
+                                        required
+                                        className="w-full bg-gray-700 rounded p-2 text-white focus:outline-none"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="font-semibold">Type New Password Again:</label>
+                                    <input
+                                        type="password"
+                                        value={confirmNewPassword}
+                                        onChange={e => setConfirmNewPassword(e.target.value)}
+                                        required
+                                        className="w-full bg-gray-700 rounded p-2 text-white focus:outline-none"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="font-semibold">Type Current Password to Confirm:</label>
+                                    <input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={e => setConfirmPassword(e.target.value)}
+                                        required
+                                        className="w-full bg-gray-700 rounded p-2 text-white focus:outline-none"
+                                    />
+                                </div>
+                                <div className="flex justify-center">
+                                    <button
+                                        type="submit"
+                                        className="bg-blue-900 px-6 py-2 rounded font-bold duration-500 hover:bg-blue-700"
+                                    >
+                                        Update Password
+                                    </button>
+                                </div>
+                            </form>
+                        </section>
                     )}
 
                 </section>
