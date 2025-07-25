@@ -22,7 +22,7 @@ const ProfilePage = () => {
     const [user, setUser] = useState(null)
     const [repos, setRepos] = useState([])
     const [isFollowing, setIsFollowing] = useState(false)
-    
+
 
     useEffect(() => {
         if (!isOwner && currentUser && user) {
@@ -333,7 +333,7 @@ const ProfilePage = () => {
 
                             {isOwner && isEditing ? (
                                 <li>
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-wrap gap-2">
                                         🔗{' '}
                                         <input
                                             type="text"
@@ -345,15 +345,17 @@ const ProfilePage = () => {
                                 </li>
                             ) : user.website ? (
                                 <li>
-                                    🔗{' '}
-                                    <a
-                                        href={user.website}
-                                        className="text-blue-700 hover:underline"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        {user.website}
-                                    </a>
+                                    <div className="flex flex-wrap gap-2">
+                                        🔗{' '}
+                                        <a
+                                            href={user.website}
+                                            className="text-blue-700 hover:underline"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {user.website}
+                                        </a>
+                                    </div>
                                 </li>
                             ) : null}
                         </ul>
