@@ -101,7 +101,7 @@ export default function ProfileRepoPage() {
     ? currentUser.avatarUrl.startsWith('http')
       ? `${currentUser.avatarUrl}?v=${avatarBuster}`
       : `${API}${currentUser.avatarUrl}?v=${avatarBuster}`
-    : logo;
+    : defaultAvatar;
 
   // icons
   const icons = {
