@@ -90,6 +90,24 @@ const SettingsPage = () => {
         }
     }
 
+    async function handleAvatarDelete() {
+        if (!window.confirm('Revert to default avatar?')) return
+        try {
+            const res = await fetch(`${API}/auth/me/avatar`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (!res.ok) throw new Error('Delete failed')
+            const { user: updated } = await res.json()
+            // sync states & bump cache-buster
+            setUser(updated)
+            setAuthUser(cu => ({ ...cu, avatarUrl: updated.avatarUrl }))
+            setAvatarBuster(Date.now())
+        } catch (err) {
+            console.error(err)
+            alert(err.message)
+        }
+    }
 
     // error & succ text disappear after 5sec:
     // clear error after 5s
@@ -330,7 +348,9 @@ const SettingsPage = () => {
                                     </MenuItem>
                                     <div className="my-1 h-px bg-gray-800" />
                                     <MenuItem>
-                                        <button className="w-full rounded-lg px-3 py-1.5 duration-500 data-focus:bg-white/10">
+                                        <button
+                                            onClick={handleAvatarDelete}
+                                            className="w-full rounded-lg px-3 py-1.5 duration-500 data-focus:bg-white/10">
                                             Delete
                                         </button>
                                     </MenuItem>

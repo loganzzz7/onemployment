@@ -4,6 +4,7 @@ import User from '../models/user.js'
 import { authMiddle } from '../middle/status.js'
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 
 const router = express.Router();
 
@@ -153,6 +154,32 @@ router.post(
       res.json({ user: u })
     } catch (err) {
       console.error(err)
+      res.status(500).json({ error: err.message })
+    }
+  }
+);
+
+// DELETE /api/auth/me/avatar
+router.delete(
+  '/me/avatar',
+  authMiddle,
+  async (req, res) => {
+    try {
+      const u = await User.findById(req.userId)
+      if (!u) return res.status(404).json({ error: 'User not found' })
+
+      if (u.avatarUrl) {
+        const relPath = u.avatarUrl.replace('/pfpuploads/', '')
+        const absPath = path.join(process.cwd(), 'pfpuploads', relPath)
+        fs.unlink(absPath, err => { /* ignore errors */ })
+      }
+
+      u.avatarUrl = ''
+      await u.save()
+
+      res.json({ user: u })
+    } catch (err) {
+      console.error('Avatar delete failed:', err)
       res.status(500).json({ error: err.message })
     }
   }
