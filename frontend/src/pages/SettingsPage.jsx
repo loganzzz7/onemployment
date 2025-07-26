@@ -22,7 +22,7 @@ function useMediaQuery(query) {
 }
 
 const SettingsPage = () => {
-    const { user: currentUser, setUser: setAuthUser, logout } = useContext(AuthContext)
+    const { user: currentUser, setUser: setAuthUser, logout, avatarBuster, setAvatarBuster } = useContext(AuthContext)
     const { username } = useParams()
     const navigate = useNavigate()
     const location = useLocation()
@@ -83,6 +83,7 @@ const SettingsPage = () => {
             // sync both local and context
             setUser(updated)
             setAuthUser(cu => ({ ...cu, avatarUrl: updated.avatarUrl }))
+            setAvatarBuster(Date.now())
         } catch (err) {
             console.error(err)
             alert(err.message)
@@ -265,8 +266,8 @@ const SettingsPage = () => {
     const avatarSrc = user.avatarUrl
         ?
         user.avatarUrl.startsWith('http')
-            ? user.avatarUrl
-            : `${API}${user.avatarUrl}`
+            ? `${user.avatarUrl}?v=${avatarBuster}`
+            : `${API}${user.avatarUrl}?v=${avatarBuster}`
         : defaultAvatar
 
     return (
@@ -318,21 +319,19 @@ const SettingsPage = () => {
                                 <MenuItems
                                     transition
                                     anchor={isMobile ? 'bottom start' : 'right mid'}
-                                    className="ml-2 w-35 rounded-xl border-2 border-gray-800 bg-gray-900 p-1 text-sm/6 text-white transition duration-300 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0"
+                                    className="ml-2 w-25 rounded-xl border-2 border-gray-800 bg-gray-900 p-1 text-sm/6 text-white transition duration-300 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0"
                                 >
                                     <MenuItem>
                                         <button
                                             onClick={() => fileInputRef.current.click()}
-                                            className="group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 duration-500 data-focus:bg-white/10">
+                                            className="w-full rounded-lg px-3 py-1.5 duration-500 data-focus:bg-white/10">
                                             Edit
-                                            <kbd className="ml-auto hidden text-xs text-white/50 group-data-focus:inline">⌘E</kbd>
                                         </button>
                                     </MenuItem>
                                     <div className="my-1 h-px bg-gray-800" />
                                     <MenuItem>
-                                        <button className="group flex w-full items-center gap-2 rounded-lg px-3 py-1.5 duration-500 data-focus:bg-white/10">
+                                        <button className="w-full rounded-lg px-3 py-1.5 duration-500 data-focus:bg-white/10">
                                             Delete
-                                            <kbd className="ml-auto hidden text-xs text-white/50 group-data-focus:inline">⌘D</kbd>
                                         </button>
                                     </MenuItem>
                                 </MenuItems>

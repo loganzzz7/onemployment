@@ -11,7 +11,7 @@ const API = import.meta.env.VITE_API_BASE;
 
 
 const ProfilePage = () => {
-    const { user: currentUser, setUser: setAuthUser, logout } = useContext(AuthContext)
+    const { user: currentUser, setUser: setAuthUser, logout, avatarBuster } = useContext(AuthContext)
     const { username } = useParams()
     const navigate = useNavigate()
     const location = useLocation()
@@ -36,6 +36,17 @@ const ProfilePage = () => {
         currentUser?.avatarUrl,
         user?.avatarUrl
     ])
+
+    const srcBase = isOwner
+        ? currentUser?.avatarUrl
+        : user?.avatarUrl;
+
+    const avatarSrc = srcBase
+        ? (srcBase.startsWith('http')
+            ? srcBase
+            : `${API}${srcBase}`
+        ) + `?v=${avatarBuster}`
+        : defaultAvatar;
 
     useEffect(() => {
         if (!isOwner && currentUser && user) {
@@ -207,16 +218,7 @@ const ProfilePage = () => {
                     <div className="flex flex-col gap-4">
                         <Link to={`/settings/${username}/publicprofile`}>
                             <img
-                                src={
-                                    isOwner
-                                        ? (currentUser.avatarUrl?.startsWith('http')
-                                            ? currentUser.avatarUrl
-                                            : `${API}${currentUser.avatarUrl}`)
-                                        : (user.avatarUrl?.startsWith('http')
-                                            ? user.avatarUrl
-                                            : `${API}${user.avatarUrl}`)
-                                        || defaultAvatar
-                                }
+                                src={avatarSrc}
                                 alt={`${user.name} avatar`}
                                 className="cursor-pointer mx-auto lg:mx-0 h-48 w-48 rounded-full border-2 border-gray-800 duration-500 hover:border-white"
                             />

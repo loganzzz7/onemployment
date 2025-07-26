@@ -24,7 +24,7 @@ const API = import.meta.env.VITE_API_BASE;
 
 
 const Navbar = () => {
-  const { user: currentUser, loading } = useContext(AuthContext)
+  const { user: currentUser, loading, avatarBuster } = useContext(AuthContext)
 
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [newName, setNewName] = useState('')
@@ -52,6 +52,11 @@ const Navbar = () => {
           .includes(seasonQuery.trim().toLowerCase())
       )
 
+  const avatarSrc = currentUser?.avatarUrl
+    ? currentUser.avatarUrl.startsWith('http')
+          ? `${currentUser.avatarUrl}?v=${avatarBuster}`
+          : `${API}${currentUser.avatarUrl}?v=${avatarBuster}`
+    : logo;
 
   async function handleAddRepo() {
     const token = localStorage.getItem('token')
@@ -253,7 +258,7 @@ const Navbar = () => {
             <Popover className="relative">
               <PopoverButton className="flex gap-4 items-center focus:outline-none">
                 <img
-                  src={currentUser.avatarUrl || logo}
+                  src={avatarSrc}
                   alt={`${currentUser.username} avatar`}
                   className="h-12 w-12 rounded-full border-2 border-gray-600 cursor-pointer duration-500 hover:border-white"
                 />

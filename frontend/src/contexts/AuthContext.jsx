@@ -8,12 +8,16 @@ export const AuthContext = createContext({
     loading: true,
     login: () => { },
     logout: () => { },
-    setUser: () => { }
+    setUser: () => { },
+    avatarBuster: Date.now(),
+    setAvatarBuster: () => { }
 })
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
+
+    const [avatarBuster, setAvatarBuster] = useState(Date.now())
 
     const fetchMe = useCallback(async () => {
         const token = localStorage.getItem('token')
@@ -44,6 +48,7 @@ export function AuthProvider({ children }) {
     const login = (token, user) => {
         localStorage.setItem('token', token)
         setUser(user)
+        setAvatarBuster(Date.now())
     }
 
     const logout = () => {
@@ -52,7 +57,7 @@ export function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout, setUser }}>
+        <AuthContext.Provider value={{ user, loading, login, logout, setUser, avatarBuster, setAvatarBuster }}>
             {children}
         </AuthContext.Provider>
     )

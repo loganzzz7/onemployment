@@ -9,7 +9,7 @@ const API = import.meta.env.VITE_API_BASE;
 
 
 export default function ProfileRepoPage() {
-  const { user: currentUser, setUser: setAuthUser, logout } = useContext(AuthContext)
+  const { user: currentUser, setUser: setAuthUser, logout, avatarBuster } = useContext(AuthContext)
   const navigate = useNavigate()
   const location = useLocation()
   const { username } = useParams()
@@ -96,6 +96,12 @@ export default function ProfileRepoPage() {
     }))
     setIsFollowing(false)
   }
+
+  const avatarSrc = currentUser?.avatarUrl
+    ? currentUser.avatarUrl.startsWith('http')
+      ? `${currentUser.avatarUrl}?v=${avatarBuster}`
+      : `${API}${currentUser.avatarUrl}?v=${avatarBuster}`
+    : logo;
 
   // icons
   const icons = {
@@ -206,7 +212,7 @@ export default function ProfileRepoPage() {
           <div className="flex flex-col gap-4">
             <Link to={`/settings/${username}/publicprofile`}>
               <img
-                src={user.avatarUrl || defaultAvatar}
+                src={avatarSrc}
                 alt={`${user.name} avatar`}
                 className="cursor-pointer mx-auto lg:mx-0 h-48 w-48 rounded-full border-2 border-gray-800
                                 duration-500 hover:border-white"

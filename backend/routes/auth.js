@@ -5,11 +5,23 @@ import { authMiddle } from '../middle/status.js'
 import multer from "multer";
 import path from "path";
 
-const router = express.Router()
+const router = express.Router();
+
+const UPLOAD_DIR = path.join(process.cwd(), 'pfpuploads');
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, UPLOAD_DIR)
+  },
+  filename(req, file, cb) {
+    // use userId plus extension
+    const ext = path.extname(file.originalname)
+    cb(null, `${req.userId}${ext}`)
+  }
+});
 
 const upload = multer({
-  dest: path.join(process.cwd(), "pfpuploads/"),
-  limits: { fileSize: 5 * 1024 * 1024 } // e.g. 5MB max
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 // POST /api/auth/register
@@ -125,25 +137,23 @@ router.patch('/password', authMiddle, async (req, res) => {
 
 // POST /api/auth/me/avatar
 router.post(
-  "/me/avatar",
+  '/me/avatar',
   authMiddle,
-  upload.single("avatar"),
+  upload.single('avatar'),
   async (req, res) => {
     try {
-      // find the user
-      const u = await User.findById(req.userId);
-      if (!u) return res.status(404).json({ error: "User not found" });
+      const u = await User.findById(req.userId)
+      if (!u) return res.status(404).json({ error: 'User not found' })
 
-      // multer has put the file at uploads/<random-filename>
-      // construct the public URL
-      u.avatarUrl = `/pfpuploads/${req.file.filename}`;
-      await u.save();
+      // build the public URL
+      const filename = req.file.filename
+      u.avatarUrl = `/pfpuploads/${filename}`
+      await u.save()
 
-      // return the up-to-date user object
-      res.json({ user: u });
+      res.json({ user: u })
     } catch (err) {
-      console.error("Avatar upload failed:", err);
-      res.status(500).json({ error: err.message });
+      console.error(err)
+      res.status(500).json({ error: err.message })
     }
   }
 );
