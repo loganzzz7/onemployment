@@ -10,7 +10,7 @@ const API = import.meta.env.VITE_API_BASE;
 const CommitPage = () => {
   const { username, repoid, commitid } = useParams()
   const token = localStorage.getItem('token')
-  const { user: currentUser } = useContext(AuthContext)
+  const { user: currentUser, setUser: avatarBuster } = useContext(AuthContext)
   const isAuthenticated = Boolean(token)
   const isOwner = currentUser?.username === username
   const navigate = useNavigate()
@@ -105,6 +105,12 @@ const CommitPage = () => {
     }
   }
 
+  const avatarSrc = currentUser?.avatarUrl
+    ? currentUser.avatarUrl.startsWith('http')
+      ? `${currentUser.avatarUrl}?v=${avatarBuster}`
+      : `${API}${currentUser.avatarUrl}?v=${avatarBuster}`
+    : defaultAvatar;
+
   return (
     <main className="font-mono min-h-screen bg-black text-white">
       {/* head */}
@@ -112,7 +118,7 @@ const CommitPage = () => {
         <div className="flex items-center space-x-3">
           <Link to={`/profile/${username}`}>
             <img
-              src={repo.user.avatarUrl || avatar}
+              src={avatarSrc}
               alt={`${repo.user.username} avatar`}
               className="h-8 w-8 rounded-full border-2 border-gray-600 duration-500 hover:border-white cursor-pointer"
             />
@@ -139,7 +145,7 @@ const CommitPage = () => {
         <div className="bg-gray-900 rounded-lg p-6 flex items-center justify-between border-2 border-gray-700">
           <div className="flex items-center space-x-4">
             <img
-              src={avatar}
+              src={avatarSrc}
               alt={`${repo.user.username} avatar`}
               className="w-12 h-12 rounded-full object-cover border border-gray-600"
             />

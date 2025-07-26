@@ -19,7 +19,7 @@ export default function RepoPage() {
   const token = localStorage.getItem('token')
   const isAuthenticated = Boolean(token)
 
-  const { user: currentUser } = useContext(AuthContext)
+  const { user: currentUser, setUser: avatarBuster } = useContext(AuthContext)
 
   const [repo, setRepo] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -146,6 +146,12 @@ export default function RepoPage() {
     setRepo(prev => ({ ...prev, ...updated, user: prev.user }))
   }
 
+  const avatarSrc = currentUser?.avatarUrl
+    ? currentUser.avatarUrl.startsWith('http')
+      ? `${currentUser.avatarUrl}?v=${avatarBuster}`
+      : `${API}${currentUser.avatarUrl}?v=${avatarBuster}`
+    : defaultAvatar;
+
   return (
     <main className="font-mono min-h-screen bg-black text-white">
       {/* head */}
@@ -153,7 +159,7 @@ export default function RepoPage() {
         <div className="flex items-center space-x-3">
           <Link to={`/profile/${repo.user.username}`}>
             <img
-              src={repo.user.avatarUrl || avatar}
+              src={avatarSrc}
               alt={`${repo.user.username} avatar`}
               className="h-8 w-8 rounded-full border-2 border-gray-600 duration-500 hover:border-white cursor-pointer"
             />
