@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import RepoCard from '../components/RepoCard'
 import { Link } from 'react-router-dom'
 import SplitText from '../components/SplitText'
-const API = import.meta.env.VITE_API_BASE;
+const API = import.meta.env.VITE_API_BASE || '/api';
 
 
 

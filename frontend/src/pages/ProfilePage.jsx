@@ -6,7 +6,7 @@ import CalendarHeatmap from 'react-calendar-heatmap'
 import 'react-calendar-heatmap/dist/styles.css'
 import defaultAvatar from '../assets/logo.png'
 import { AuthContext } from '../contexts/AuthContext'
-const API = import.meta.env.VITE_API_BASE;
+const API = import.meta.env.VITE_API_BASE || '/api';
 
 
 

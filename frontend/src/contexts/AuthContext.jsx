@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react'
-const API = import.meta.env.VITE_API_BASE;
+const API = import.meta.env.VITE_API_BASE || '/api';
 
 
 

@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { AuthContext } from '../contexts/AuthContext'
-const API = import.meta.env.VITE_API_BASE;
+const API = import.meta.env.VITE_API_BASE || '/api';
 
 
 

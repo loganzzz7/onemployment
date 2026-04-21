@@ -19,7 +19,7 @@ import {
 import clsx from "clsx"
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/20/solid'
 import { AuthContext } from '../contexts/AuthContext'
-const API = import.meta.env.VITE_API_BASE;
+const API = import.meta.env.VITE_API_BASE || '/api';
 
 
 

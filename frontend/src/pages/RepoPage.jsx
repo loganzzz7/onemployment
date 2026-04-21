@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import avatar from '../assets/logo.png'
+import defaultAvatar from '../assets/logo.png'
 import {
   Dialog,
   DialogPanel,
@@ -10,7 +10,7 @@ import {
   DialogBackdrop,
 } from '@headlessui/react'
 import { AuthContext } from '../contexts/AuthContext'
-const API = import.meta.env.VITE_API_BASE;
+const API = import.meta.env.VITE_API_BASE || '/api';
 
 
 

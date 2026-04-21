@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { format } from 'date-fns'
 import avatar from "../assets/logo.png"
 import { AuthContext } from '../contexts/AuthContext'
-const API = import.meta.env.VITE_API_BASE;
+const API = import.meta.env.VITE_API_BASE || '/api';
 
 
 

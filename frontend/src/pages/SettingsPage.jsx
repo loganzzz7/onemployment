@@ -6,7 +6,7 @@ import { AuthContext } from '../contexts/AuthContext'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 
 
-const API = import.meta.env.VITE_API_BASE
+const API = import.meta.env.VITE_API_BASE || '/api'
 
 function useMediaQuery(query) {
     const [matches, setMatches] = useState(() => window.matchMedia(query).matches)

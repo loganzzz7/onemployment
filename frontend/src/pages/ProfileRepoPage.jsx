@@ -4,7 +4,7 @@ import { format } from 'date-fns'
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
 import defaultAvatar from '../assets/logo.png'
 import { AuthContext } from '../contexts/AuthContext'
-const API = import.meta.env.VITE_API_BASE;
+const API = import.meta.env.VITE_API_BASE || '/api';
 
 
 
